@@ -105,8 +105,12 @@ class CrawlerAgent(BaseAgent):
         finally:
             await web_tools.close()
 
+        # Deduplicate pages with identical content (SPA shells, error pages)
+        pages_data, crawl_warnings = self._deduplicate_pages(pages_data)
+
         state["pages_crawled"] = pages_data
         state["crawl_errors"] = crawl_errors
+        state["crawl_warnings"] = crawl_warnings
 
         if not pages_data:
             self.logger.warning(
@@ -115,7 +119,7 @@ class CrawlerAgent(BaseAgent):
                 crawl_errors or ["No pages returned and no explicit errors captured"],
             )
 
-        self.logger.info("Crawled %d pages", len(pages_data))
+        self.logger.info("Crawled %d pages (after dedup)", len(pages_data))
         return state
 
     def _score_and_collect_urls(self, homepage: dict, base_url: str) -> set[str]:
@@ -201,6 +205,76 @@ class CrawlerAgent(BaseAgent):
                     matched.append(url)
                     break
         return matched
+
+    def _deduplicate_pages(
+        self, pages: list[dict]
+    ) -> tuple[list[dict], list[str]]:
+        """Collapse pages with identical titles/content into a single entry.
+
+        Returns the deduplicated page list and a list of warning messages.
+        This catches SPAs that serve the same shell for every route and
+        sites that return the same error page for non-existent URLs.
+        """
+        if len(pages) <= 1:
+            return pages, []
+
+        # Group pages by title (normalized)
+        from collections import defaultdict
+
+        title_groups: dict[str, list[dict]] = defaultdict(list)
+        for page in pages:
+            title = (page.get("title") or "").strip()
+            title_groups[title].append(page)
+
+        deduped: list[dict] = []
+        warnings: list[str] = []
+
+        for title, group in title_groups.items():
+            if len(group) <= 2:
+                # Small group — keep all pages
+                deduped.extend(group)
+                continue
+
+            # More than 2 pages share the same title — likely duplicates
+            is_error = any(
+                kw in title.lower()
+                for kw in ("404", "not found", "error", "page not found")
+            )
+
+            representative = group[0]
+            duplicate_count = len(group) - 1
+            representative["duplicate_count"] = duplicate_count
+            representative["duplicate_urls"] = [
+                p.get("url", "") for p in group[1:]
+            ]
+            deduped.append(representative)
+
+            display_title = title if title else "(empty title)"
+            if is_error:
+                warnings.append(
+                    f"{len(group)} pages returned '{display_title}' — "
+                    f"the site may not serve unique content for each URL"
+                )
+                representative["is_error_page"] = True
+            else:
+                warnings.append(
+                    f"{len(group)} pages returned identical title "
+                    f"'{display_title}' — possible SPA without "
+                    f"server-side rendering"
+                )
+
+            self.logger.info(
+                "Collapsed %d duplicate pages with title '%s' into 1",
+                len(group),
+                display_title,
+            )
+
+        if warnings:
+            self.logger.warning(
+                "Crawl dedup warnings: %s", "; ".join(warnings)
+            )
+
+        return deduped, warnings
 
     @staticmethod
     def _classify_error(error_msg: str, url: str) -> str:

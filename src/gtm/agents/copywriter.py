@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from gtm.agents.base import BaseAgent
 
 
@@ -14,6 +16,32 @@ class CopywriterAgent(BaseAgent):
         await self._report_progress(
             state.get("job_id", ""), 82, "Creating copy and messaging kit"
         )
+
+        # Detect crawl failure
+        page_analyses = state.get("page_analyses", [])
+        crawl_failed = (
+            not page_analyses
+            or state.get("website_analysis", {}).get("crawl_failed")
+        )
+
+        if crawl_failed:
+            brand_context = (
+                "Note: The website could not be crawled. Base your copy on the "
+                "provided brand information, target audience, market research, and "
+                "competitor analysis instead of website content.\n\n"
+                f"Brand: {config['brand']}\n"
+                f"Main Offers: {config.get('main_offers', '')}\n"
+                f"USP: {config.get('usp_key', '')}\n"
+                f"Primary Audience: {config['audience_primary']}\n"
+                f"Secondary Audience: {config.get('audience_secondary', '')}\n"
+                f"Business Size: {config.get('business_size', '')}\n\n"
+                f"Market Research:\n"
+                f"{json.dumps(state.get('market_research', {}), indent=2, default=str)[:1500]}\n\n"
+                f"Competitor Insights:\n"
+                f"{json.dumps(state.get('competitor_analyses', [])[:3], indent=2, default=str)[:1500]}\n"
+            )
+        else:
+            brand_context = ""
 
         prompt = f"""Return ONLY valid JSON. Create a complete copy kit for {config['brand']}:
 {{
@@ -46,7 +74,7 @@ class CopywriterAgent(BaseAgent):
   }}
 }}
 
-Brand: {config['brand']}
+{brand_context}Brand: {config['brand']}
 Audience: {config['audience_primary']}
 USP: {config.get('usp_key', '')}
 Main Offers: {config.get('main_offers', '')}

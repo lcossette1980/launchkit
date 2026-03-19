@@ -17,6 +17,30 @@ class StrategistAgent(BaseAgent):
             state.get("job_id", ""), 65, "Generating GTM strategy"
         )
 
+        # Detect crawl failure
+        page_analyses = state.get("page_analyses", [])
+        crawl_failed = (
+            not page_analyses
+            or state.get("website_analysis", {}).get("crawl_failed")
+        )
+
+        if crawl_failed:
+            website_context = (
+                "Note: The website could not be crawled. Base your analysis on the "
+                "provided brand information, target audience, market research, and "
+                "competitor analysis instead of website content.\n\n"
+                f"Brand: {config['brand']}\n"
+                f"Main Offers: {config.get('main_offers', '')}\n"
+                f"USP: {config.get('usp_key', '')}\n"
+                f"Primary Audience: {config['audience_primary']}\n"
+                f"Secondary Audience: {config.get('audience_secondary', '')}\n"
+            )
+        else:
+            website_context = (
+                "Website Analysis Summary (top findings):\n"
+                f"{json.dumps(page_analyses[:3], indent=2, default=str)[:2500]}"
+            )
+
         prompt = f"""Based on the analysis of {config['brand']}, return ONLY valid JSON:
 {{
   "positioning": ["positioning statement 1", ...],
@@ -36,14 +60,17 @@ Business Size: {config.get('business_size', 'Small Team')}
 Budget: {config.get('monthly_budget', '$500-$2000')}
 Audience: {config['audience_primary']}
 USP: {config.get('usp_key', '')}
+Main Offers: {config.get('main_offers', '')}
 
 Be specific, actionable, and realistic for the budget. Include estimated costs where relevant.
 
-Website Analysis Summary (top findings):
-{json.dumps(state.get('page_analyses', [])[:3], indent=2, default=str)[:2500]}
+{website_context}
 
 Competitor Analysis Summary:
 {json.dumps(state.get('competitor_analyses', [])[:3], indent=2, default=str)[:2500]}
+
+Market Research:
+{json.dumps(state.get('market_research', {}), indent=2, default=str)[:1500]}
 """
 
         strategy = await self._generate_json(

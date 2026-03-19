@@ -46,6 +46,10 @@ class MarketResearcherAgent(BaseAgent):
 Target audience: {config['audience_primary']}
 USP: {config.get('usp_key', '')}
 
+IMPORTANT: Focus on DIRECT COMPETITORS — companies offering similar products/services
+to a similar audience. Ignore results about health insurance, dictionaries, vocabulary
+sites, or anything unrelated to {config.get('main_offers', 'the product category')}.
+
 Based on search results and competitor landscape, return ONLY valid JSON:
 {{
     "trends": ["trend1", ...],
@@ -77,18 +81,34 @@ Based on search results and competitor landscape, return ONLY valid JSON:
         """Run search queries and filter competitor URLs."""
         brand = config["brand"]
         offers = config.get("main_offers", "")
+        usp = config.get("usp_key", "")
+        audience = config.get("audience_primary", "")
 
-        # Build queries with brand disambiguation
+        # Build queries focused on PRODUCT CATEGORY, not brand name.
+        # Brand-name searches produce irrelevant results when the name
+        # is ambiguous (e.g. "VC LaunchKit" → health-insurance hits).
         negatives = (
-            ' -"Evolv AI" -EvolutionIQ -EvoluteIQ -weapons -security '
+            " -insurance -health -dictionary -vocabulary -definitions "
             "-g2 -cbinsights -trustradius -sourceforge -reddit -mdpi"
         )
-        queries = [
-            f'"{brand}" {offers} consulting training{negatives}',
-            f"{offers} providers site:.com{negatives}",
-            f'"{brand}" competitors{negatives}',
-        ]
-        # Add LLM-suggested queries
+
+        # Primary queries target product category and audience
+        queries: list[str] = []
+        if offers:
+            queries.append(f"{offers} SaaS tools software{negatives}")
+            queries.append(f"best {offers} platforms for {audience}{negatives}")
+        if usp:
+            queries.append(f"{usp} software tools{negatives}")
+        if audience and offers:
+            queries.append(
+                f"{audience} {offers} alternatives{negatives}"
+            )
+
+        # Include brand name as ONE supplementary query, not the primary one
+        if brand:
+            queries.append(f'"{brand}" competitors alternatives{negatives}')
+
+        # Add LLM-suggested queries from the planner
         plan_queries = state.get("analysis_plan", {}).get("competitor_queries", [])
         queries.extend(plan_queries[:5])
 
