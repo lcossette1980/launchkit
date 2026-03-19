@@ -32,13 +32,7 @@ COPY --from=frontend-builder /build/dist /app/frontend/dist
 # Create directories with proper ownership
 RUN mkdir -p /app/data /app/logs /app/exports
 
-# Create non-root user
-RUN groupadd -r appuser && useradd -r -g appuser -d /app -s /bin/bash appuser \
-    && chown -R appuser:appuser /app
-
-USER appuser
-
 EXPOSE 8000
 
 # Use gunicorn with uvicorn workers for production
-CMD ["gunicorn", "gtm.api.app:create_app()", "-c", "gunicorn.conf.py"]
+CMD ["sh", "-c", "alembic upgrade head && gunicorn 'gtm.api.app:create_app()' -c gunicorn.conf.py"]
