@@ -41,4 +41,4 @@ USER appuser
 EXPOSE 8000
 
 # Use gunicorn with uvicorn workers for production
-CMD ["gunicorn", "gtm.api.app:create_app()", "--config", "gunicorn.conf.py"]
+CMD ["gunicorn", "gtm.api.app:create_app()", "-c", "gunicorn.conf.py"]

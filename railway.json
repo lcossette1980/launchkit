@@ -5,7 +5,7 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "alembic upgrade head && gunicorn gtm.api.app:create_app() --config gunicorn.conf.py",
+    "startCommand": "alembic upgrade head && gunicorn 'gtm.api.app:create_app()' -c gunicorn.conf.py",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
