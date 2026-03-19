@@ -22,11 +22,15 @@ REQUIRED_IN_PRODUCTION = [
     "database_url",
     "redis_url",
     "secret_key",
+    "openai_api_key",
+]
+
+# Warned but not fatal — app can run without these
+RECOMMENDED_IN_PRODUCTION = [
     "stripe_api_key",
     "stripe_webhook_secret",
     "stripe_pro_price_id",
     "stripe_agency_price_id",
-    "openai_api_key",
 ]
 
 
@@ -44,6 +48,15 @@ def _validate_settings_for_production(settings) -> None:
     if missing:
         logger.critical("Missing required production settings: %s", ", ".join(missing))
         sys.exit(1)
+
+    # Warn about recommended settings
+    warned = []
+    for key in RECOMMENDED_IN_PRODUCTION:
+        val = getattr(settings, key, "")
+        if not val:
+            warned.append(key.upper())
+    if warned:
+        logger.warning("Recommended production settings not set: %s", ", ".join(warned))
 
 
 @asynccontextmanager
