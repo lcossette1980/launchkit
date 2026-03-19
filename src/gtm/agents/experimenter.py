@@ -79,7 +79,7 @@ Rules:
         result = await self._generate_json(
             prompt,
             required_keys=["experiments"],
-            min_counts={"experiments": 5},
+            min_counts={"experiments": 3},
             brand=config["brand"],
             audience=config["audience_primary"],
         )

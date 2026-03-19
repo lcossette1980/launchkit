@@ -79,7 +79,9 @@ class BaseAgent:
     ) -> dict:
         """Generate JSON with validation and one retry on failure.
 
-        Ported from the original _generate_with_validation().
+        If validation fails after retry, returns the best result available
+        rather than discarding partial data (e.g., 3 experiments is better
+        than 0 experiments).
         """
         required_keys = required_keys or []
         min_counts = min_counts or {}
@@ -96,6 +98,12 @@ class BaseAgent:
                     return False
             return True
 
+        def _has_keys(d: Any) -> bool:
+            """Check if result has the required keys (ignoring min_counts)."""
+            if not isinstance(d, dict):
+                return False
+            return all(k in d for k in required_keys)
+
         raw = await self._generate(
             prompt,
             context=context,
@@ -103,15 +111,26 @@ class BaseAgent:
             brand=brand,
             audience=audience,
         )
-        result = extract_json(raw)
+        first_result = extract_json(raw)
 
-        if _ok(result):
-            return result
+        if _ok(first_result):
+            return first_result
+
+        # Log what we got on first attempt
+        if isinstance(first_result, dict):
+            counts = {k: len(v) for k, v in first_result.items() if isinstance(v, list)}
+            self.logger.warning(
+                "%s: first attempt incomplete (counts=%s, needed=%s) — retrying",
+                self.name, counts, min_counts,
+            )
+        else:
+            self.logger.warning("%s: first attempt returned non-dict — retrying", self.name)
 
         # Retry with explicit instruction
         retry_prompt = (
             prompt
-            + "\n\nEnsure ALL required keys are present and lists meet minimum counts. "
+            + "\n\nIMPORTANT: Your previous response did not meet requirements. "
+            "Ensure ALL required keys are present and lists have enough items. "
             "Return ONLY the JSON object."
         )
         raw = await self._generate(
@@ -121,8 +140,28 @@ class BaseAgent:
             brand=brand,
             audience=audience,
         )
-        result = extract_json(raw)
-        return result if isinstance(result, dict) else {}
+        retry_result = extract_json(raw)
+
+        if _ok(retry_result):
+            return retry_result
+
+        # Return the BEST result we have — prefer retry if it has keys, else first
+        # This ensures partial data (e.g., 3 experiments) is kept, not discarded
+        if isinstance(retry_result, dict) and _has_keys(retry_result):
+            self.logger.warning(
+                "%s: retry still incomplete but has data — using partial result",
+                self.name,
+            )
+            return retry_result
+        if isinstance(first_result, dict) and _has_keys(first_result):
+            self.logger.warning(
+                "%s: using first attempt partial result",
+                self.name,
+            )
+            return first_result
+
+        self.logger.error("%s: both attempts failed to produce valid JSON", self.name)
+        return retry_result if isinstance(retry_result, dict) else (first_result if isinstance(first_result, dict) else {})
 
     async def _report_progress(
         self, job_id: str, pct: int, message: str
