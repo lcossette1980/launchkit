@@ -1,5 +1,6 @@
 import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import SEO from "../components/SEO";
 
 /* ── Mockup frame component ─────────────────────────────── */
 function AppMockup({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -66,6 +67,10 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-bg">
+      <SEO
+        description="AI-powered GTM playbooks for solo developers and small teams. Paste your URL, get a page-by-page audit, competitor analysis, copy kit, and 30/60/90 day roadmap in 10 minutes."
+        path="/"
+      />
       {/* ═══ Nav ═══ */}
       <nav className="border-b border-border/50 bg-bg/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-5 flex items-center justify-between h-14">
@@ -76,6 +81,7 @@ export default function LandingPage() {
             <a href="#how-it-works" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">How It Works</a>
             <a href="#what-you-get" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">Features</a>
             <Link to="/examples" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">Examples</Link>
+            <Link to="/blog" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">Blog</Link>
             <Link to="/pricing" className="text-sm text-text2 hover:text-text transition-colors">Pricing</Link>
             <Link to="/login" className="px-4 py-1.5 bg-accent hover:bg-accent2 text-white text-sm font-semibold rounded-lg transition-colors">
               Sign In
@@ -455,6 +461,7 @@ export default function LandingPage() {
           </span>
           <div className="flex gap-5 text-xs text-text2/40">
             <Link to="/examples" className="hover:text-text2 transition-colors">Examples</Link>
+            <Link to="/blog" className="hover:text-text2 transition-colors">Blog</Link>
             <Link to="/pricing" className="hover:text-text2 transition-colors">Pricing</Link>
             <Link to="/login" className="hover:text-text2 transition-colors">Sign In</Link>
           </div>

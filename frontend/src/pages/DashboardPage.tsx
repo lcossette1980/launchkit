@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { listAnalyses, rerunAnalysis } from "../api/analyses";
 import { getBillingStatus, syncBilling } from "../api/billing";
 import type { JobListItem, BillingStatus } from "../types/api";
+import SEO from "../components/SEO";
 
 const STATUS_COLORS: Record<string, string> = {
   completed: "bg-success/15 text-success",
@@ -95,6 +96,7 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-5 py-8">
+      <SEO title="Dashboard" description="Your GTM analysis history, usage, and account overview." path="/dashboard" />
       {/* Sync banner */}
       {syncMsg && (
         <div className="mb-4 px-4 py-3 bg-accent/10 border border-accent/30 text-accent2 rounded-lg text-sm font-medium">

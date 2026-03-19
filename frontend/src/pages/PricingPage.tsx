@@ -1,6 +1,7 @@
 import { useAuth } from "../context/AuthContext";
 import { createCheckout } from "../api/billing";
 import { Link } from "react-router-dom";
+import SEO from "../components/SEO";
 
 const PLANS = [
   {
@@ -47,6 +48,7 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-bg">
+      <SEO title="Pricing" description="Simple, transparent pricing for solo developers and small teams. Start free, upgrade to Pro ($29/mo) or Agency ($79/mo) when you need more." path="/pricing" />
       {/* Nav bar */}
       <nav className="border-b border-border">
         <div className="max-w-6xl mx-auto px-5 flex items-center justify-between h-14">

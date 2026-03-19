@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getSharedReport } from "../api/analyses";
 import type { FullReport, Scores } from "../types/api";
+import SEO from "../components/SEO";
 
 /* Reuse score helpers */
 function scoreColor(v: number) {
@@ -60,6 +61,11 @@ export default function SharedReportPage() {
 
   return (
     <div className="min-h-screen bg-bg">
+      <SEO
+        title={data.brand ? `${data.brand} — GTM Playbook` : "Shared GTM Playbook"}
+        description={exec.overview ? exec.overview.slice(0, 160) : "Complete GTM playbook with page-by-page audit, competitor analysis, copy kit, and roadmap."}
+        path={`/share/${token}`}
+      />
       {/* Shared report nav */}
       <nav className="border-b border-border bg-surface/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-5 flex items-center justify-between h-12">

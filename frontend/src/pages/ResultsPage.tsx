@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { getAnalysis, getReportUrl, createShareLink, getShareInfo } from "../api/analyses";
 import { createCheckout } from "../api/billing";
 import type { FullReport, Scores } from "../types/api";
+import SEO from "../components/SEO";
 
 function ShareButton({ jobId }: { jobId: string }) {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
@@ -184,6 +185,11 @@ export default function ResultsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-5 py-8">
+      <SEO
+        title={report.brand_info?.brand ? `${report.brand_info.brand} — GTM Playbook` : "GTM Playbook"}
+        description="Complete GTM playbook with page-by-page audit, competitor analysis, copy kit, and roadmap."
+        path={`/analysis/${id}`}
+      />
       {/* Header */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>

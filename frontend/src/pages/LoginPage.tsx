@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import SEO from "../components/SEO";
 
 export default function LoginPage() {
   const { user, login } = useAuth();
@@ -26,6 +27,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-bg px-4">
+      <SEO title="Sign In" description="Sign in to VCLaunchKit with a magic link. No password needed." path="/login" />
       <div className="bg-surface border border-border rounded-2xl p-10 max-w-md w-full text-center">
         <h1 className="text-2xl font-bold mb-1">
           <span className="text-accent2">VC</span>LaunchKit

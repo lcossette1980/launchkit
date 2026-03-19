@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { startAnalysis } from "../api/analyses";
 import { ApiError } from "../api/client";
 import type { AnalysisRequest } from "../types/api";
+import SEO from "../components/SEO";
 
 export default function NewAnalysisPage() {
   const navigate = useNavigate();
@@ -51,6 +52,7 @@ export default function NewAnalysisPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-5 py-8">
+      <SEO title="New Analysis" description="Start a new GTM analysis. Enter your website URL and get a complete go-to-market playbook." path="/new" />
       <h1 className="text-2xl font-bold mb-2">New Analysis</h1>
       <p className="text-text2 text-sm mb-8">Enter your website details to generate a comprehensive GTM playbook.</p>
 

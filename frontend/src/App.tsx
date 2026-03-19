@@ -13,6 +13,7 @@ import ResultsPage from "./pages/ResultsPage";
 import SettingsPage from "./pages/SettingsPage";
 import SharedReportPage from "./pages/SharedReportPage";
 import ExamplesPage from "./pages/ExamplesPage";
+import BlogPage from "./pages/BlogPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 export default function App() {
@@ -26,6 +27,8 @@ export default function App() {
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/share/:token" element={<SharedReportPage />} />
           <Route path="/examples" element={<ExamplesPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:slug" element={<BlogPage />} />
 
           {/* Authenticated routes */}
           <Route element={<AuthGuard />}>

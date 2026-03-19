@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { getBillingStatus, getPortalUrl } from "../api/billing";
 import type { BillingStatus } from "../types/api";
+import SEO from "../components/SEO";
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -22,6 +23,7 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-5 py-8">
+      <SEO title="Settings" description="Manage your VCLaunchKit account, billing, and API keys." path="/settings" />
       <h1 className="text-2xl font-bold mb-8">Settings</h1>
 
       {/* Profile */}
