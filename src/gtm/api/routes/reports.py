@@ -46,7 +46,7 @@ async def download_json(
         raise HTTPException(status_code=404, detail="Results not found")
 
     brand_slug = job.brand.lower().replace(" ", "-")[:30]
-    filename = f"launchkit-{brand_slug}-{job_id[:8]}.json"
+    filename = f"vclaunchkit-{brand_slug}-{job_id[:8]}.json"
 
     return Response(
         content=json.dumps(results, indent=2, default=str),
@@ -72,7 +72,7 @@ async def download_html(
 
     html_content = generate_html_report(results)
     brand_slug = job.brand.lower().replace(" ", "-")[:30]
-    filename = f"launchkit-{brand_slug}-{job_id[:8]}.html"
+    filename = f"vclaunchkit-{brand_slug}-{job_id[:8]}.html"
 
     return Response(
         content=html_content,
@@ -123,7 +123,7 @@ async def download_pdf(
     pdf_data = await _render_pdf(html_content)
 
     brand_slug = job.brand.lower().replace(" ", "-")[:30]
-    filename = f"launchkit-{brand_slug}-{job_id[:8]}.pdf"
+    filename = f"vclaunchkit-{brand_slug}-{job_id[:8]}.pdf"
 
     return Response(
         content=pdf_data,

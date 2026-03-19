@@ -25,8 +25,8 @@ export default function AppShell() {
         <div className="max-w-6xl mx-auto px-5 flex items-center justify-between h-14">
           <div className="flex items-center gap-8">
             <Link to="/dashboard" className="text-lg font-bold tracking-tight">
-              <span className="text-accent2">Launch</span>
-              <span className="text-text">Kit</span>
+              <span className="text-accent2">VC</span>
+              <span className="text-text">LaunchKit</span>
             </Link>
             <div className="hidden md:flex items-center gap-1">
               {NAV_ITEMS.map((item) => (

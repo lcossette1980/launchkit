@@ -66,7 +66,7 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_user: str = ""
     smtp_password: str = ""
-    smtp_from: str = "hello@launchkit.dev"
+    smtp_from: str = "hello@vclaunchkit.com"
 
     # --- Stripe ---
     stripe_api_key: str = ""

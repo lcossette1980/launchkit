@@ -34,10 +34,10 @@ def send_magic_link(settings: Settings, email: str, token: str) -> None:
         return
 
     # Production: send real email via SMTP
-    subject = "Sign in to LaunchKit"
+    subject = "Sign in to VCLaunchKit"
     html_body = f"""
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
-        <h2 style="color:#6366f1">LaunchKit</h2>
+        <h2 style="color:#6366f1">VCLaunchKit</h2>
         <p>Click the button below to sign in:</p>
         <a href="{link}"
            style="display:inline-block;padding:12px 24px;background:#6366f1;

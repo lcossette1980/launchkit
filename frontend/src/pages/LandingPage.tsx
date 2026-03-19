@@ -11,7 +11,7 @@ function AppMockup({ children, className = "" }: { children: React.ReactNode; cl
         <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
         <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
         <div className="ml-3 flex-1 bg-bg/60 rounded-md h-5 flex items-center px-2">
-          <span className="text-[10px] text-text2/50">launchkit.dev</span>
+          <span className="text-[10px] text-text2/50">vclaunchkit.com</span>
         </div>
       </div>
       <div className="p-5">{children}</div>
@@ -42,7 +42,7 @@ export default function LandingPage() {
       <nav className="border-b border-border/50 bg-bg/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-5 flex items-center justify-between h-14">
           <span className="text-lg font-bold tracking-tight">
-            <span className="text-accent2">Launch</span>Kit
+            <span className="text-accent2">VC</span>LaunchKit
           </span>
           <div className="flex items-center gap-5">
             <a href="#how-it-works" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">How It Works</a>
@@ -279,7 +279,7 @@ export default function LandingPage() {
       <section className="bg-surface/50 border-y border-border/30 py-14">
         <div className="max-w-4xl mx-auto px-5 text-center">
           <p className="text-text2 text-sm italic leading-relaxed max-w-2xl mx-auto">
-            "I spent weeks trying to figure out my GTM strategy. LaunchKit gave me a complete playbook in 8 minutes. The page-by-page analysis alone was worth it — I found conversion issues I'd been blind to."
+            "I spent weeks trying to figure out my GTM strategy. VCLaunchKit gave me a complete playbook in 8 minutes. The page-by-page analysis alone was worth it — I found conversion issues I'd been blind to."
           </p>
           <p className="text-text2/50 text-xs mt-4">— Early beta user</p>
         </div>
@@ -343,7 +343,7 @@ export default function LandingPage() {
       <footer className="border-t border-border/30 py-8">
         <div className="max-w-6xl mx-auto px-5 flex items-center justify-between">
           <span className="text-sm text-text2/50">
-            <span className="text-accent2/50 font-semibold">Launch</span>Kit
+            <span className="text-accent2/50 font-semibold">VC</span>LaunchKit
           </span>
           <div className="flex gap-5 text-xs text-text2/40">
             <Link to="/pricing" className="hover:text-text2 transition-colors">Pricing</Link>

@@ -28,7 +28,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-bg px-4">
       <div className="bg-surface border border-border rounded-2xl p-10 max-w-md w-full text-center">
         <h1 className="text-2xl font-bold mb-1">
-          <span className="text-accent2">Launch</span>Kit
+          <span className="text-accent2">VC</span>LaunchKit
         </h1>
         <p className="text-text2 text-sm mb-8">AI-Powered GTM Playbooks for Builders</p>
 

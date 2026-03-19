@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     settings = get_settings()
 
     configure_logging(settings)
-    logger.info("Starting LaunchKit API (%s)", settings.environment)
+    logger.info("Starting VCLaunchKit API (%s)", settings.environment)
 
     # Fail fast on missing production config
     _validate_settings_for_production(settings)
@@ -74,7 +74,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("All services initialized")
     yield
 
-    logger.info("Shutting down LaunchKit API")
+    logger.info("Shutting down VCLaunchKit API")
 
 
 def create_app() -> FastAPI:
@@ -82,7 +82,7 @@ def create_app() -> FastAPI:
     settings = get_settings()
 
     app = FastAPI(
-        title="LaunchKit",
+        title="VCLaunchKit",
         description="AI-powered GTM playbooks for builders",
         version="0.3.0",
         lifespan=lifespan,
@@ -144,8 +144,47 @@ def create_app() -> FastAPI:
 
         _spa_index = _frontend_dist / "index.html"
 
+        # Social crawlers need server-rendered OG tags for shared reports
+        SOCIAL_BOTS = ("twitterbot", "facebookexternalhit", "linkedinbot",
+                       "slackbot", "discordbot", "telegrambot", "whatsapp")
+
         @app.get("/{path:path}")
-        async def spa_fallback(path: str):
+        async def spa_fallback(path: str, request: Request):
+            from fastapi.responses import HTMLResponse
+
+            # Serve dynamic OG tags for shared report links when social bots visit
+            if path.startswith("share/") and any(
+                bot in (request.headers.get("user-agent", "").lower())
+                for bot in SOCIAL_BOTS
+            ):
+                token = path.split("/", 1)[1] if "/" in path else path[6:]
+                if token:
+                    try:
+                        from gtm.storage.database import get_session
+                        from gtm.storage.repository import JobRepository
+                        sess = next(get_session())
+                        repo = JobRepository(sess)
+                        job = repo.get_job_by_share_token(token)
+                        if job and job.results:
+                            scores = job.results.get("website_analysis", {}).get("overall_scores", {})
+                            avg = round(sum(scores.values()) / len(scores)) if scores else 0
+                            desc = f"GTM Playbook for {job.brand} — Overall score: {avg}/100. Page-by-page audit, competitor analysis, copy kit, and 30/60/90 roadmap."
+                            return HTMLResponse(f"""<!doctype html>
+<html><head>
+<meta property="og:type" content="article"/>
+<meta property="og:site_name" content="VCLaunchKit"/>
+<meta property="og:title" content="{job.brand} — GTM Playbook by VCLaunchKit"/>
+<meta property="og:description" content="{desc}"/>
+<meta property="og:url" content="https://vclaunchkit.com/share/{token}"/>
+<meta property="og:image" content="https://vclaunchkit.com/og-image.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="{job.brand} — GTM Playbook"/>
+<meta name="twitter:description" content="{desc}"/>
+<meta http-equiv="refresh" content="0;url=https://vclaunchkit.com/share/{token}"/>
+</head><body></body></html>""")
+                    except Exception:
+                        pass
+
             candidate = _frontend_dist / path
             if path and candidate.exists() and candidate.is_file():
                 return FileResponse(str(candidate))

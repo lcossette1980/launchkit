@@ -41,7 +41,7 @@ export default function ExamplesPage() {
       <nav className="border-b border-border/50 bg-bg/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-5 flex items-center justify-between h-14">
           <Link to="/" className="text-lg font-bold tracking-tight">
-            <span className="text-accent2">Launch</span>Kit
+            <span className="text-accent2">VC</span>LaunchKit
           </Link>
           <div className="flex items-center gap-4">
             <Link to="/pricing" className="text-sm text-text2 hover:text-text transition-colors">Pricing</Link>

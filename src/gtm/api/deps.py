@@ -64,11 +64,11 @@ def _authenticate(
 def _get_or_create_dev_user(db: Session) -> User:
     """Get or create the dev-mode auto-login user."""
     user_repo = UserRepository(db)
-    dev_user = user_repo.get_user_by_email("dev@launchkit.dev")
+    dev_user = user_repo.get_user_by_email("dev@vclaunchkit.com")
     if not dev_user:
         dev_user = User(
             id="dev-tenant",
-            email="dev@launchkit.dev",
+            email="dev@vclaunchkit.com",
             name="Dev User",
             plan="agency",
             is_active=True,

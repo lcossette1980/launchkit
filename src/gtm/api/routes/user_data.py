@@ -79,7 +79,7 @@ async def export_user_data(
         content=json.dumps(data, indent=2, default=str),
         media_type="application/json",
         headers={
-            "Content-Disposition": f'attachment; filename="launchkit-data-export-{user.id[:8]}.json"'
+            "Content-Disposition": f'attachment; filename="vclaunchkit-data-export-{user.id[:8]}.json"'
         },
     )
 

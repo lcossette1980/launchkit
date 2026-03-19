@@ -61,7 +61,7 @@ export default function SharedReportPage() {
       <nav className="border-b border-border bg-surface/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-5 flex items-center justify-between h-12">
           <Link to="/" className="text-sm font-bold">
-            <span className="text-accent2">Launch</span>Kit
+            <span className="text-accent2">VC</span>LaunchKit
           </Link>
           <Link
             to="/login"
