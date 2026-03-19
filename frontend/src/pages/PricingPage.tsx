@@ -1,6 +1,7 @@
 import { useAuth } from "../context/AuthContext";
 import { createCheckout } from "../api/billing";
 import { Link } from "react-router-dom";
+import PublicNav from "../components/PublicNav";
 import SEO from "../components/SEO";
 
 const PLANS = [
@@ -49,39 +50,7 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-bg">
       <SEO title="Pricing" description="Simple, transparent pricing for solo developers and small teams. Start free, upgrade to Pro ($29/mo) or Agency ($79/mo) when you need more." path="/pricing" />
-      {/* Nav bar */}
-      <nav className="border-b border-border">
-        <div className="max-w-6xl mx-auto px-5 flex items-center justify-between h-14">
-          <Link to={user ? "/dashboard" : "/"} className="text-lg font-bold">
-            <span className="text-accent2">VC</span>LaunchKit
-          </Link>
-          <div className="flex items-center gap-4">
-            {user ? (
-              <>
-                <Link to="/dashboard" className="text-sm text-text2 hover:text-text transition-colors">
-                  Dashboard
-                </Link>
-                <Link to="/new" className="text-sm text-text2 hover:text-text transition-colors">
-                  New Analysis
-                </Link>
-                <span className="text-xs text-text2">{user.email}</span>
-              </>
-            ) : (
-              <>
-                <Link to="/" className="text-sm text-text2 hover:text-text transition-colors">
-                  Home
-                </Link>
-                <Link
-                  to="/login"
-                  className="px-4 py-1.5 bg-accent hover:bg-accent2 text-white text-sm font-semibold rounded-lg transition-colors"
-                >
-                  Sign In
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
+      <PublicNav />
 
       {/* Pricing content */}
       <div className="max-w-4xl mx-auto px-5 py-12">

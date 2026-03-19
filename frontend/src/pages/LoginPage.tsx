@@ -57,6 +57,10 @@ export default function LoginPage() {
             {message.text}
           </p>
         )}
+
+        <p className="mt-6 text-xs text-text2/50">
+          <a href="/" className="hover:text-text2 transition-colors">&larr; Back to Home</a>
+        </p>
       </div>
     </div>
   );

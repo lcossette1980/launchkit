@@ -18,10 +18,14 @@ async def list_examples(db: Session = Depends(get_db)):
     No authentication required. Returns a curated list of shared reports
     with summary data for preview cards.
     """
+    # Exclude our own site from the gallery
+    EXCLUDED_BRANDS = {"vclaunchkit", "vc launchkit"}
+
     jobs = (
         db.query(AnalysisJob)
         .filter_by(status=JobStatus.COMPLETED, is_public=True)
         .filter(AnalysisJob.share_token.isnot(None))
+        .filter(~AnalysisJob.site_url.ilike("%vclaunchkit%"))
         .order_by(AnalysisJob.completed_at.desc())
         .limit(10)
         .all()

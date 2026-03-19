@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { getSharedReport } from "../api/analyses";
 import type { FullReport, Scores } from "../types/api";
 import SEO from "../components/SEO";
+import PublicNav from "../components/PublicNav";
 
 /* Reuse score helpers */
 function scoreColor(v: number) {
@@ -66,25 +67,7 @@ export default function SharedReportPage() {
         description={exec.overview ? exec.overview.slice(0, 160) : "Complete GTM playbook with page-by-page audit, competitor analysis, copy kit, and roadmap."}
         path={`/share/${token}`}
       />
-      {/* Shared report nav */}
-      <nav className="border-b border-border bg-surface/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-5 flex items-center justify-between h-12">
-          <div className="flex items-center gap-4">
-            <Link to="/" className="text-sm font-bold">
-              <span className="text-accent2">VC</span>LaunchKit
-            </Link>
-            <Link to="/examples" className="text-xs text-text2 hover:text-accent2 transition-colors">
-              &larr; All Examples
-            </Link>
-          </div>
-          <Link
-            to="/login"
-            className="px-4 py-1.5 bg-accent hover:bg-accent2 text-white text-xs font-semibold rounded-lg transition-colors"
-          >
-            Get Your Own Playbook
-          </Link>
-        </div>
-      </nav>
+      <PublicNav />
 
       <div className="max-w-5xl mx-auto px-5 py-8">
         {/* Header */}
