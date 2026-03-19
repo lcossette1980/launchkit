@@ -63,9 +63,14 @@ export default function SharedReportPage() {
       {/* Shared report nav */}
       <nav className="border-b border-border bg-surface/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-5 flex items-center justify-between h-12">
-          <Link to="/" className="text-sm font-bold">
-            <span className="text-accent2">VC</span>LaunchKit
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/" className="text-sm font-bold">
+              <span className="text-accent2">VC</span>LaunchKit
+            </Link>
+            <Link to="/examples" className="text-xs text-text2 hover:text-accent2 transition-colors">
+              &larr; All Examples
+            </Link>
+          </div>
           <Link
             to="/login"
             className="px-4 py-1.5 bg-accent hover:bg-accent2 text-white text-xs font-semibold rounded-lg transition-colors"
@@ -81,6 +86,25 @@ export default function SharedReportPage() {
           <p className="text-xs text-text2 mb-1">Shared GTM Playbook</p>
           <h1 className="text-2xl font-bold">{data.brand}</h1>
           <p className="text-sm text-text2 mt-1">{data.site_url}</p>
+          {data.completed_at && (
+            <p className="text-xs text-text2/50 mt-1">
+              Generated {new Date(data.completed_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+            </p>
+          )}
+        </div>
+
+        {/* Preview notice */}
+        <div className="mb-6 bg-accent/5 border border-accent/20 rounded-xl p-4 flex items-start gap-3">
+          <span className="text-accent2 text-sm mt-0.5">&#9432;</span>
+          <div>
+            <p className="text-sm font-medium mb-1">This is a preview report</p>
+            <p className="text-xs text-text2 leading-relaxed">
+              You're seeing the executive summary, scores, and top priorities. The full report includes
+              page-by-page analysis, competitor deep-dives, copy kit, email templates, ad copy,
+              30/60/90 roadmap, and KPI dashboard.{" "}
+              <Link to="/login" className="text-accent2 hover:underline">Sign up free</Link> to generate your own complete playbook.
+            </p>
+          </div>
         </div>
 
         {/* Executive Summary */}
@@ -191,11 +215,36 @@ export default function SharedReportPage() {
           </section>
         ) : null}
 
+        {/* Locked sections preview */}
+        <section className="mb-8">
+          <h2 className="text-accent2 text-xs font-semibold uppercase tracking-wider mb-4">Also included in full report</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {[
+              { title: "Page-by-Page Analysis", desc: "Every page scored on clarity, audience fit, conversion, SEO, and UX with specific fix-this-here recommendations" },
+              { title: "Competitor Deep-Dives", desc: "5+ competitors analyzed: value proposition, target audience, pricing, differentiators, strengths, and weaknesses" },
+              { title: "Complete Copy Kit", desc: "5 headlines with subheadlines and CTAs, value propositions, and a full landing page blueprint" },
+              { title: "Email & LinkedIn Templates", desc: "Welcome, follow-up, and re-engagement emails. LinkedIn connection, follow-up, and value-share messages" },
+              { title: "Ad Copy (3 Platforms)", desc: "Google Search, Facebook, and LinkedIn ad copy with headlines, descriptions, and CTAs" },
+              { title: "Market Research", desc: "Target audience definition, competitive landscape, 10 keyword opportunities, and 10 content topics" },
+              { title: "KPI Dashboard", desc: "North star metric, primary/secondary KPIs, daily/weekly/monthly tracking cadence, and alert thresholds" },
+              { title: "HTML & JSON Export", desc: "Download the full report as a branded HTML document or structured JSON for integration with your tools" },
+            ].map((s) => (
+              <div key={s.title} className="bg-surface border border-border/50 rounded-lg p-4 opacity-60">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-text2/40 text-xs">&#128274;</span>
+                  <h3 className="text-sm font-medium text-text2">{s.title}</h3>
+                </div>
+                <p className="text-xs text-text2/60 leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* CTA Banner */}
-        <div className="mt-10 bg-gradient-to-r from-accent/10 to-accent2/10 border border-accent/20 rounded-xl p-8 text-center">
-          <h2 className="text-xl font-bold mb-2">Want your own GTM playbook?</h2>
+        <div className="mt-6 bg-gradient-to-r from-accent/10 to-accent2/10 border border-accent/20 rounded-xl p-8 text-center">
+          <h2 className="text-xl font-bold mb-2">Want the full playbook?</h2>
           <p className="text-text2 text-sm mb-5 max-w-md mx-auto">
-            Get a complete website audit, competitor analysis, copy kit, email templates, and 30/60/90 day roadmap in under 10 minutes.
+            Get all sections including page-by-page analysis, competitor intel, copy kit, email templates, ad copy, and downloadable reports.
           </p>
           <Link
             to="/login"

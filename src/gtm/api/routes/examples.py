@@ -37,16 +37,24 @@ async def list_examples(db: Session = Depends(get_db)):
 
         # Determine industry tag from brand/URL
         brand_lower = job.brand.lower()
-        if any(w in brand_lower for w in ["consult", "agency", "service"]):
+        url_lower = job.site_url.lower()
+        combined = brand_lower + " " + url_lower
+        if any(w in combined for w in ["dissertation", "scholarly", "academic", "research"]):
+            industry = "EdTech"
+        elif any(w in combined for w in ["consult", "agency", "service", "cossette"]):
             industry = "Consulting"
-        elif any(w in brand_lower for w in ["dev", "api", "code", "linear", "github"]):
+        elif any(w in combined for w in ["launch", "gtm", "market", "growth"]):
+            industry = "MarTech"
+        elif any(w in combined for w in ["clarity", "coach", "mentor", "wellness"]):
+            industry = "Coaching"
+        elif any(w in combined for w in ["dev", "api", "code", "linear", "github"]):
             industry = "Developer Tools"
-        elif any(w in brand_lower for w in ["mail", "email", "send", "resend"]):
+        elif any(w in combined for w in ["mail", "email", "send", "resend"]):
             industry = "Email / SaaS"
-        elif any(w in brand_lower for w in ["data", "db", "planet", "scale"]):
+        elif any(w in combined for w in ["data", "db", "planet", "scale"]):
             industry = "Infrastructure"
-        elif any(w in brand_lower for w in ["cal", "schedule", "meet"]):
-            industry = "Scheduling / SaaS"
+        elif any(w in combined for w in ["cal", "schedule", "meet"]):
+            industry = "Scheduling"
         else:
             industry = "SaaS"
 

@@ -61,9 +61,13 @@ export default function ExamplesPage() {
       <div className="max-w-5xl mx-auto px-5 py-12">
         <div className="text-center mb-10">
           <p className="text-accent2 text-sm font-medium uppercase tracking-wide mb-2">Sample Reports</p>
-          <h1 className="text-3xl font-bold mb-3">See what LaunchKit generates</h1>
-          <p className="text-text2 max-w-xl mx-auto">
-            Real GTM playbooks generated for real products. Each report was produced in under 10 minutes. Click any card to view the full report.
+          <h1 className="text-3xl font-bold mb-3">See what VCLaunchKit generates</h1>
+          <p className="text-text2 max-w-xl mx-auto mb-3">
+            Real GTM playbooks generated for real products. Each report was produced in under 10 minutes.
+          </p>
+          <p className="text-text2/60 text-xs max-w-md mx-auto">
+            These are preview reports showing the executive summary, scores, and top priorities.
+            Full reports include page-by-page analysis, competitor deep-dives, copy kit, email templates, and more.
           </p>
         </div>
 
@@ -113,13 +117,41 @@ export default function ExamplesPage() {
                     <span className="text-[10px] px-2 py-0.5 bg-surface2 border border-border rounded-full text-text2">
                       {ex.industry}
                     </span>
-                    <span className="text-xs text-accent2 group-hover:underline">View full report &rarr;</span>
+                    <span className="text-xs text-accent2 group-hover:underline">View preview &rarr;</span>
                   </div>
                 </Link>
               );
             })}
           </div>
         )}
+
+        {/* What's in a full report */}
+        <div className="mt-12 mb-12">
+          <h2 className="text-xl font-bold text-center mb-6">What's in a full report</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              "Executive Summary",
+              "Website Scores",
+              "Page-by-Page Audit",
+              "Market Research",
+              "Competitor Analysis",
+              "GTM Strategy",
+              "30/60/90 Roadmap",
+              "Copy Kit & Headlines",
+              "Email Templates",
+              "LinkedIn Messages",
+              "Ad Copy (3 platforms)",
+              "KPI Dashboard",
+            ].map((s) => (
+              <div key={s} className="bg-surface border border-border/50 rounded-lg p-3 text-center">
+                <p className="text-xs font-medium text-text2">{s}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-xs text-text2/50 mt-4">
+            Plus HTML report download, JSON export, shareable links, and PDF export.
+          </p>
+        </div>
 
         {/* CTA */}
         <div className="text-center mt-12">
