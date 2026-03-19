@@ -1,0 +1,141 @@
+{
+  "brand_info": {
+    "brand": "TestBrand",
+    "url": "https://example.com",
+    "audience_primary": "indie developers",
+    "audience_secondary": "startup founders",
+    "main_offers": "AI consulting",
+    "usp_key": "speed and simplicity",
+    "business_size": "Solopreneur",
+    "monthly_budget": "$500-$2000"
+  },
+  "executive_summary": {
+    "overview": "TestBrand operates in the AI consulting space with strong developer focus.",
+    "key_findings": [
+      "Strong technical content on the blog",
+      "Weak CTA placement across all pages",
+      "SEO opportunities exist in long-tail keywords",
+      "Competitor pricing is 3-5x higher",
+      "Community engagement is a key differentiator"
+    ],
+    "top_priorities": [
+      "Improve homepage conversion flow",
+      "Add transparent pricing page",
+      "Start developer-focused content marketing",
+      "Launch referral program",
+      "Set up analytics tracking"
+    ]
+  },
+  "website_analysis": {
+    "pages_analyzed": [
+      {
+        "url": "https://example.com",
+        "title": "TestBrand - AI Consulting for Developers",
+        "strengths": ["Clear value proposition", "Fast load time"],
+        "weaknesses": ["No pricing information", "Generic CTA"],
+        "recommendations": ["Add pricing page", "Make CTA more specific"],
+        "scores": {"clarity": 75, "audience_fit": 80, "conversion": 60, "seo": 55, "ux": 70},
+        "quick_wins": ["Add CTA above fold", "Include testimonials"]
+      }
+    ],
+    "overall_scores": {"clarity": 75, "audience_fit": 80, "conversion": 60, "seo": 55, "ux": 70},
+    "top_strengths": ["Clear value proposition", "Fast load time"],
+    "top_weaknesses": ["No pricing information", "Generic CTA"],
+    "top_recommendations": ["Add pricing page", "Make CTA more specific"],
+    "quick_wins": ["Add CTA above fold", "Include testimonials"]
+  },
+  "market_research": {
+    "trends": ["AI adoption accelerating among indie devs", "Developer tools market growing 30% YoY"],
+    "target_audience": "Indie developers and solo founders building AI-powered products",
+    "competitive_landscape": "Fragmented market with few developer-focused consultancies",
+    "keyword_opportunities": ["ai consulting for developers", "developer gtm strategy"],
+    "content_topics": ["AI product launch guide", "Developer marketing playbook"]
+  },
+  "competitor_analysis": {
+    "competitors": [
+      {
+        "url": "https://competitor-a.com",
+        "name": "CompetitorA",
+        "value_proposition": "Enterprise AI transformation",
+        "target_audience": "Large enterprises",
+        "pricing_model": "Custom enterprise pricing",
+        "key_differentiators": ["Scale", "Enterprise support"],
+        "strengths": ["Brand recognition", "Case studies"],
+        "weaknesses": ["Expensive", "Slow onboarding"],
+        "content_strategy": "Whitepapers and analyst reports"
+      }
+    ]
+  },
+  "gtm_strategy": {
+    "positioning": ["The developer-first AI consultancy"],
+    "channels": {"primary": ["Twitter/X", "Dev.to", "GitHub"], "secondary": ["LinkedIn", "YouTube"]},
+    "content_strategy": ["Weekly technical blog posts", "Open source templates"],
+    "partnerships": ["Developer tool companies", "Coding bootcamps"],
+    "pricing": ["Free tier for open source", "Pay-as-you-go consulting"],
+    "quick_wins": ["Launch landing page", "Publish first blog post"],
+    "implementation_roadmap": {
+      "30_day": ["Set up analytics", "Launch landing page", "First blog post"],
+      "60_day": ["Launch referral program", "Start paid ads", "Build email list"],
+      "90_day": ["First case study", "Launch premium tier", "Conference talk"]
+    }
+  },
+  "experiments": {
+    "experiments": [
+      {
+        "title": "Homepage CTA above-fold test",
+        "hypothesis": "Moving CTA above the fold will increase signup rate by 25%",
+        "metric": "signup_rate",
+        "baseline": null,
+        "target": null,
+        "impact": 8,
+        "confidence": 7,
+        "effort": 2,
+        "ice_score": 28.0,
+        "details": "A/B test current layout vs CTA positioned above the fold"
+      }
+    ]
+  },
+  "copy_kit": {
+    "headlines": [
+      {
+        "headline": "Ship faster with AI guidance",
+        "subheadline": "Expert GTM strategy designed for solo developers",
+        "cta": "Get Your Free Analysis"
+      }
+    ],
+    "value_propositions": ["Developer-first approach", "Data-driven recommendations"],
+    "emails": {
+      "welcome": {"subject": "Welcome to TestBrand", "body": "Thanks for signing up! Here is your first insight..."}
+    },
+    "linkedin_messages": {
+      "connection_request": "Hi, I noticed you build AI tools. We help developers like you get to market faster."
+    },
+    "ads": {
+      "google_search": {"headline": "AI GTM Strategy for Devs", "description": "Get your app to market faster", "cta": "Free Analysis"}
+    },
+    "landing_page_sections": {
+      "problem": ["Getting users for your app is harder than building it"],
+      "solution": ["AI-powered GTM analysis gives you a clear roadmap"],
+      "benefits": ["Save months of trial and error"],
+      "social_proof": ["100+ developers have used our analysis"],
+      "faq": ["Q: How long does it take? A: About 15 minutes for a full analysis"]
+    }
+  },
+  "dashboard": {
+    "north_star_metric": "Weekly Active Users",
+    "north_star_target": "1000 WAU within 90 days",
+    "primary_kpis": ["Signup rate", "Activation rate", "Retention D7"],
+    "secondary_metrics": ["Page views", "Time on site", "Referral count"],
+    "tracking_requirements": ["Google Analytics 4", "Mixpanel or PostHog"],
+    "cadence": {"daily": ["Signups", "Active users"], "weekly": ["Retention", "NPS"], "monthly": ["Revenue", "Churn"]},
+    "alerts": [
+      {"metric": "Signup rate", "threshold": "< 2%", "action": "Review landing page copy and CTA"}
+    ]
+  },
+  "metadata": {
+    "job_id": "fixture-001",
+    "analysis_depth": "comprehensive",
+    "pages_crawled": 1,
+    "competitors_analyzed": 1
+  }
+}

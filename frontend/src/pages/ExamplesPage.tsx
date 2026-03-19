@@ -1,0 +1,141 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
+interface ExampleReport {
+  brand: string;
+  site_url: string;
+  share_token: string;
+  industry: string;
+  scores: Record<string, number>;
+  summary_snippet: string;
+}
+
+export default function ExamplesPage() {
+  const { user } = useAuth();
+  const [examples, setExamples] = useState<ExampleReport[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/v1/examples")
+      .then((r) => r.json())
+      .then(setExamples)
+      .catch(() => setExamples([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  function scoreColor(v: number) {
+    if (v >= 75) return "text-success";
+    if (v >= 50) return "text-warning";
+    return "text-danger";
+  }
+
+  function avgScore(scores: Record<string, number>) {
+    const vals = Object.values(scores);
+    return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+  }
+
+  return (
+    <div className="min-h-screen bg-bg">
+      {/* Nav */}
+      <nav className="border-b border-border/50 bg-bg/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-5 flex items-center justify-between h-14">
+          <Link to="/" className="text-lg font-bold tracking-tight">
+            <span className="text-accent2">Launch</span>Kit
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/pricing" className="text-sm text-text2 hover:text-text transition-colors">Pricing</Link>
+            {user ? (
+              <Link to="/dashboard" className="px-4 py-1.5 bg-accent hover:bg-accent2 text-white text-sm font-semibold rounded-lg transition-colors">
+                Dashboard
+              </Link>
+            ) : (
+              <Link to="/login" className="px-4 py-1.5 bg-accent hover:bg-accent2 text-white text-sm font-semibold rounded-lg transition-colors">
+                Sign In
+              </Link>
+            )}
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-5xl mx-auto px-5 py-12">
+        <div className="text-center mb-10">
+          <p className="text-accent2 text-sm font-medium uppercase tracking-wide mb-2">Sample Reports</p>
+          <h1 className="text-3xl font-bold mb-3">See what LaunchKit generates</h1>
+          <p className="text-text2 max-w-xl mx-auto">
+            Real GTM playbooks generated for real products. Each report was produced in under 10 minutes. Click any card to view the full report.
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="text-center py-20 text-text2 animate-pulse">Loading examples...</div>
+        ) : examples.length === 0 ? (
+          <div className="text-center py-20 text-text2">
+            <p className="mb-4">No example reports available yet.</p>
+            <Link to="/login" className="px-5 py-2.5 bg-accent text-white font-semibold rounded-lg">
+              Generate Your Own
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {examples.map((ex) => {
+              const avg = avgScore(ex.scores);
+              return (
+                <Link
+                  key={ex.share_token}
+                  to={`/share/${ex.share_token}`}
+                  className="bg-surface border border-border rounded-xl p-5 hover:border-accent/50 transition-colors group"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="font-semibold text-[15px] group-hover:text-accent2 transition-colors">{ex.brand}</h3>
+                      <p className="text-xs text-text2 truncate max-w-[250px]">{ex.site_url}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className={`text-xl font-bold ${scoreColor(avg)}`}>{avg}</div>
+                      <div className="text-[9px] uppercase text-text2 tracking-wider">Avg Score</div>
+                    </div>
+                  </div>
+
+                  {/* Score pills */}
+                  <div className="flex gap-2 mb-3">
+                    {Object.entries(ex.scores).map(([k, v]) => (
+                      <div key={k} className="text-center flex-1">
+                        <div className={`text-sm font-bold ${scoreColor(v)}`}>{v}</div>
+                        <div className="text-[8px] uppercase text-text2 tracking-wider">{k.replace(/_/g, " ").slice(0, 6)}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="text-xs text-text2 leading-relaxed line-clamp-2">{ex.summary_snippet}</p>
+
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
+                    <span className="text-[10px] px-2 py-0.5 bg-surface2 border border-border rounded-full text-text2">
+                      {ex.industry}
+                    </span>
+                    <span className="text-xs text-accent2 group-hover:underline">View full report &rarr;</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+
+        {/* CTA */}
+        <div className="text-center mt-12">
+          <p className="text-text2 mb-4">Ready to get your own GTM playbook?</p>
+          <Link
+            to={user ? "/new" : "/login"}
+            className="px-6 py-3 bg-accent hover:bg-accent2 text-white font-semibold rounded-lg transition-colors inline-block"
+          >
+            {user ? "Run Your Analysis" : "Get Started Free"}
+          </Link>
+        </div>
+
+        <div className="text-center mt-6">
+          <Link to="/" className="text-sm text-text2 hover:text-accent2 transition-colors">&larr; Back to Home</Link>
+        </div>
+      </div>
+    </div>
+  );
+}

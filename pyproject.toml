@@ -1,0 +1,81 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gtm-analysis-system"
+version = "0.1.0"
+description = "AI-powered Go-To-Market analysis for builders and vibecoders"
+requires-python = ">=3.10"
+dependencies = [
+    # API
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "gunicorn>=21.2.0",
+    "sse-starlette>=1.8.0",
+    "python-multipart>=0.0.6",
+    "email-validator>=2.1.0",
+
+    # Payments
+    "stripe>=8.0.0",
+
+    # Task Queue
+    "celery>=5.3.4",
+    "redis>=5.0.1",
+
+    # Database
+    "sqlalchemy>=2.0.25",
+    "psycopg2-binary>=2.9.9",
+    "alembic>=1.13.1",
+
+    # Storage
+    "boto3>=1.34.34",
+
+    # Web Scraping
+    "playwright==1.55.0",
+    "beautifulsoup4>=4.12.3",
+    "aiohttp>=3.9.3",
+    "lxml>=5.1.0",
+
+    # LLM
+    "anthropic>=0.18.1",
+    "openai>=1.12.0",
+    "langgraph>=0.0.28",
+    "tiktoken>=0.6.0",
+
+    # Utilities
+    "pydantic>=2.6.0",
+    "pydantic-settings>=2.1.0",
+    "python-dotenv>=1.0.1",
+    "tenacity>=8.2.3",
+
+    # Monitoring
+    "prometheus-client>=0.19.0",
+    "sentry-sdk>=1.40.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "httpx>=0.26.0",
+    "ruff>=0.2.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "integration: Integration tests requiring external services",
+]

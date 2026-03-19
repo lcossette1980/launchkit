@@ -1,0 +1,123 @@
+import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSSE } from "../hooks/useSSE";
+
+function scoreColor(v: number) {
+  if (v >= 75) return "text-success";
+  if (v >= 50) return "text-warning";
+  return "text-danger";
+}
+
+export default function ProgressPage() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const sse = useSSE(id ?? null);
+
+  useEffect(() => {
+    if (sse.status === "completed") {
+      const timer = setTimeout(() => navigate(`/analysis/${id}`, { replace: true }), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [sse.status, id, navigate]);
+
+  const stepLabel = sse.step
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const qr = sse.quickResults;
+  const scores = qr?.website_analysis?.overall_scores;
+
+  return (
+    <div className="max-w-2xl mx-auto px-5 py-12">
+      <div className="text-center">
+        <h1 className="text-xl font-bold mb-1">Analyzing...</h1>
+        <p className="text-accent2 text-sm mb-6">{stepLabel}</p>
+
+        {/* Progress bar */}
+        <div className="bg-surface2 rounded-full h-2 overflow-hidden max-w-md mx-auto mb-3">
+          <div
+            className="h-full bg-gradient-to-r from-accent to-accent2 rounded-full transition-all duration-500"
+            style={{ width: `${sse.progress}%` }}
+          />
+        </div>
+        <p className="text-xs text-text2 mb-6">{sse.progress}%</p>
+      </div>
+
+      {/* Quick results — shown after page analysis (~3 min) */}
+      {scores && Object.keys(scores).length > 0 && (
+        <div className="mb-6">
+          <div className="bg-surface border border-accent/20 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-accent2 text-xs font-semibold uppercase tracking-wider">Early Results</p>
+              <span className="text-[10px] px-2 py-0.5 bg-accent/15 text-accent2 rounded-full font-medium">
+                Deep analysis in progress...
+              </span>
+            </div>
+            <div className="grid grid-cols-5 gap-3 mb-4">
+              {Object.entries(scores).map(([k, v]) => (
+                <div key={k} className="text-center">
+                  <div className={`text-xl font-bold ${scoreColor(v)}`}>{v}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-text2 mt-0.5">
+                    {k.replace(/_/g, " ")}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {qr?.website_analysis?.top_strengths?.length ? (
+              <div className="mt-3 pt-3 border-t border-border/50">
+                <p className="text-[10px] font-semibold text-success uppercase mb-1.5">Top Strengths</p>
+                <ul className="space-y-1">
+                  {qr.website_analysis.top_strengths.map((s, i) => (
+                    <li key={i} className="text-xs text-text2 flex gap-1.5">
+                      <span className="text-success">+</span> {s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {qr?.website_analysis?.quick_wins?.length ? (
+              <div className="mt-3 pt-3 border-t border-border/50">
+                <p className="text-[10px] font-semibold text-warning uppercase mb-1.5">Quick Wins</p>
+                <ul className="space-y-1">
+                  {qr.website_analysis.quick_wins.map((s, i) => (
+                    <li key={i} className="text-xs text-text2 flex gap-1.5">
+                      <span className="text-warning">*</span> {s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
+
+      {/* Log */}
+      <div className="bg-surface border border-border rounded-xl p-4 text-left max-h-60 overflow-y-auto font-mono text-xs text-text2 leading-relaxed">
+        {sse.logs.length === 0 && <p className="text-center py-8 text-text2/50">Waiting for events...</p>}
+        {sse.logs.map((log, i) => (
+          <div key={i} className="py-0.5 border-b border-border/50 last:border-0">
+            <span className="text-text2/40 mr-2">{log.time}</span>
+            {log.message}
+          </div>
+        ))}
+      </div>
+
+      {sse.status === "completed" && (
+        <p className="text-success text-sm font-semibold mt-6 text-center">Analysis complete! Redirecting...</p>
+      )}
+
+      {sse.status === "failed" && (
+        <div className="mt-6 text-center">
+          <p className="text-danger text-sm font-semibold mb-2">Analysis failed</p>
+          <p className="text-text2 text-xs">{sse.error}</p>
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="mt-4 px-4 py-2 bg-surface2 border border-border rounded-lg text-sm text-text2 hover:text-text transition-colors"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
