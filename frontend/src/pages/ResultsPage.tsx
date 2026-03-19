@@ -168,6 +168,8 @@ export default function ResultsPage() {
   const scores = web.overall_scores ?? {} as Scores;
   const pages = web.pages_analyzed ?? [];
   const roadmap = strategy.implementation_roadmap ?? {};
+  const crawlFailed = web.crawl_failed === true || web.overall_scores === null;
+  const scoresAreEmpty = !web.overall_scores || Object.values(web.overall_scores).every(v => v === 0);
 
   const SECTIONS = [
     "Summary", "Scores", ...(pages.length ? ["Pages"] : []),
@@ -211,6 +213,25 @@ export default function ResultsPage() {
 
       {/* ══ EXECUTIVE SUMMARY ══ */}
       <Section id="sec-summary" title="Executive Summary">
+        {crawlFailed && (
+          <div className="bg-warning/10 border border-warning/40 rounded-xl p-5 mb-3">
+            <div className="flex gap-2.5 items-start">
+              <span className="text-warning text-lg shrink-0">&#9888;</span>
+              <div>
+                <p className="font-semibold text-sm text-warning mb-1">Website Crawl Failed</p>
+                <p className="text-sm leading-relaxed">
+                  We were unable to crawl this website. The site may be down, blocking automated access, or the URL may be incorrect.
+                  Website-specific scores and page analysis are unavailable. The market research, competitor analysis, and strategy sections below are still based on publicly available information.
+                </p>
+                {web.crawl_errors && web.crawl_errors.length > 0 && (
+                  <ul className="mt-2 text-xs text-text2 space-y-1 list-disc pl-4">
+                    {web.crawl_errors.map((err, i) => <li key={i}>{err}</li>)}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
         {exec.overview && <div className="bg-surface border border-border rounded-xl p-5 mb-3"><p className="text-sm leading-relaxed">{exec.overview}</p></div>}
         {exec.top_priorities && exec.top_priorities.length > 0 && (
           <div className="bg-surface border border-border rounded-xl p-5">
@@ -226,7 +247,22 @@ export default function ResultsPage() {
       </Section>
 
       {/* ══ WEBSITE SCORES ══ */}
-      {Object.keys(scores).length > 0 && (
+      {(crawlFailed || scoresAreEmpty) && (
+        <Section id="sec-scores" title="Website Scores">
+          <div className="bg-warning/10 border border-warning/40 rounded-xl p-5 mb-4">
+            <div className="flex gap-2.5 items-start">
+              <span className="text-warning text-lg shrink-0">&#9888;</span>
+              <div>
+                <p className="font-semibold text-sm text-warning mb-1">Scores Unavailable</p>
+                <p className="text-sm text-text2">
+                  {"We couldn't fully analyze this website. The site may be down, blocking automated access, or the URL may be incorrect. Website scores could not be generated for this analysis."}
+                </p>
+              </div>
+            </div>
+          </div>
+        </Section>
+      )}
+      {!crawlFailed && !scoresAreEmpty && Object.keys(scores).length > 0 && (
         <Section id="sec-scores" title="Website Scores">
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
             {Object.entries(scores).map(([k, v]) => (

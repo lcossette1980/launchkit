@@ -45,7 +45,11 @@ class SynthesizerAgent(BaseAgent):
         dashboard = await self._generate_dashboard_spec(state)
 
         # 3. Aggregate website analysis
-        website = self._aggregate_website_analysis(state.get("page_analyses", []))
+        crawl_errors = state.get("crawl_errors", [])
+        website = self._aggregate_website_analysis(
+            state.get("page_analyses", []),
+            crawl_errors=crawl_errors,
+        )
 
         # 4. Assemble the canonical report
         report = FullReportSchema(
@@ -86,6 +90,47 @@ class SynthesizerAgent(BaseAgent):
     async def _generate_executive_summary(self, state: dict) -> ExecutiveSummarySchema:
         """Generate narrative executive summary."""
         config = state["config"]
+        page_analyses = state.get("page_analyses", [])
+        crawl_errors = state.get("crawl_errors", [])
+
+        # If zero pages were analyzed, produce a crawl-failure summary
+        if not page_analyses:
+            self.logger.warning(
+                "No pages analyzed for %s — generating crawl-failure summary",
+                config.get("site_url", "unknown"),
+            )
+            reasons = crawl_errors if crawl_errors else [
+                "The site may be down or unreachable",
+                "The site may block automated access (bot protection)",
+                "The URL may be incorrect or misspelled",
+                "The site may require authentication to access",
+            ]
+            overview = (
+                f"We were unable to crawl the website at {config['site_url']}. "
+                f"Our automated analysis could not retrieve any pages from this site. "
+                f"Possible reasons: {'; '.join(reasons)}. "
+                f"The remaining sections of this report (market research, competitor analysis, "
+                f"strategy, etc.) are based on publicly available information and may still "
+                f"be useful, but the website-specific scores and recommendations could not "
+                f"be generated."
+            )
+            return ExecutiveSummarySchema(
+                overview=overview,
+                key_findings=[
+                    f"Website at {config['site_url']} could not be crawled",
+                    "Website scores are unavailable due to crawl failure",
+                    "Review the URL for accuracy and ensure the site is publicly accessible",
+                    "If the site uses bot protection (e.g., Cloudflare), manual review is recommended",
+                    "Market research and competitor analysis are still available below",
+                ],
+                top_priorities=[
+                    "Verify the website URL is correct and the site is live",
+                    "Check if the site blocks automated access and consider whitelisting",
+                    "Re-run the analysis once the site is accessible",
+                    "Use the market research and competitor sections for immediate insights",
+                    "Consider a manual website audit in the meantime",
+                ],
+            )
 
         prompt = f"""Synthesize all analysis into an executive summary for {config['brand']}.
 Return ONLY valid JSON:
@@ -99,7 +144,7 @@ Consider resource constraints — business size: {config.get('business_size', 'S
 budget: {config.get('monthly_budget', '$500-$2000')}.
 Focus on high-ROI, actionable priorities.
 
-Website scores: {json.dumps([a.get('scores', {}) for a in state.get('page_analyses', [])[:3]], default=str)[:500]}
+Website scores: {json.dumps([a.get('scores', {}) for a in page_analyses[:3]], default=str)[:500]}
 Strategy quick wins: {json.dumps(state.get('gtm_strategy', {}).get('quick_wins', []), default=str)[:500]}
 Top experiments: {json.dumps([e.get('title', '') for e in state.get('experiments', {}).get('experiments', [])[:5]], default=str)[:300]}
 """
@@ -140,9 +185,18 @@ Tie metrics to the actual funnel and audience: {config['audience_primary']}.
         )
 
     def _aggregate_website_analysis(
-        self, page_analyses: list[dict]
+        self, page_analyses: list[dict], *, crawl_errors: list[str] | None = None,
     ) -> WebsiteAnalysisSchema:
         """Aggregate per-page analyses into overall website analysis."""
+        # Handle crawl failure: zero pages analyzed
+        if not page_analyses:
+            return WebsiteAnalysisSchema(
+                pages_analyzed=[],
+                overall_scores=None,
+                crawl_failed=True,
+                crawl_errors=crawl_errors or [],
+            )
+
         pages = []
         all_strengths: list[str] = []
         all_weaknesses: list[str] = []

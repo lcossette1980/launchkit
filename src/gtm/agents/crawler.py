@@ -31,6 +31,7 @@ class CrawlerAgent(BaseAgent):
         await web_tools.initialize()
 
         pages_data: list[dict] = []
+        crawl_errors: list[str] = []
 
         try:
             # 1. Crawl homepage
@@ -38,6 +39,12 @@ class CrawlerAgent(BaseAgent):
             homepage = await web_tools.browse(base_url)
             if homepage and "error" not in homepage:
                 pages_data.append(homepage)
+            elif homepage and "error" in homepage:
+                error_msg = homepage["error"]
+                self.logger.warning(
+                    "Failed to crawl homepage %s: %s", base_url, error_msg
+                )
+                crawl_errors.append(self._classify_error(error_msg, base_url))
 
             # 2. Extract internal links with priority scoring
             discovered_urls = set([base_url])
@@ -99,6 +106,15 @@ class CrawlerAgent(BaseAgent):
             await web_tools.close()
 
         state["pages_crawled"] = pages_data
+        state["crawl_errors"] = crawl_errors
+
+        if not pages_data:
+            self.logger.warning(
+                "Crawl finished with ZERO pages for %s. Errors: %s",
+                base_url,
+                crawl_errors or ["No pages returned and no explicit errors captured"],
+            )
+
         self.logger.info("Crawled %d pages", len(pages_data))
         return state
 
@@ -185,3 +201,23 @@ class CrawlerAgent(BaseAgent):
                     matched.append(url)
                     break
         return matched
+
+    @staticmethod
+    def _classify_error(error_msg: str, url: str) -> str:
+        """Classify a crawl error into a human-readable reason."""
+        err = error_msg.lower()
+        if "timeout" in err or "timedout" in err:
+            return f"Connection to {url} timed out — the site may be down or very slow."
+        if "dns" in err or "getaddrinfo" in err or "name resolution" in err:
+            return f"DNS resolution failed for {url} — the domain may not exist or is misconfigured."
+        if "403" in err or "forbidden" in err:
+            return f"{url} returned a 403 Forbidden — the site is blocking automated access."
+        if "404" in err or "not found" in err:
+            return f"{url} returned a 404 Not Found — the URL may be incorrect."
+        if "ssl" in err or "certificate" in err:
+            return f"SSL/certificate error for {url} — the site may have an invalid certificate."
+        if "connection refused" in err or "econnrefused" in err:
+            return f"Connection refused by {url} — the server may be down."
+        if "net::" in err or "network" in err:
+            return f"Network error reaching {url} — the site may be unreachable."
+        return f"Could not access {url}: {error_msg}"

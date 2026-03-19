@@ -76,11 +76,13 @@ export interface PageAnalysis {
 
 export interface WebsiteAnalysis {
   pages_analyzed?: PageAnalysis[];
-  overall_scores?: Scores;
+  overall_scores?: Scores | null;
   top_strengths?: string[];
   top_weaknesses?: string[];
   top_recommendations?: string[];
   quick_wins?: string[];
+  crawl_failed?: boolean;
+  crawl_errors?: string[];
 }
 
 export interface ExecutiveSummary {

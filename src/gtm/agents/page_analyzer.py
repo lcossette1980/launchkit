@@ -19,6 +19,16 @@ class PageAnalyzerAgent(BaseAgent):
         pages = state.get("pages_crawled", [])
         analyses: list[dict] = []
 
+        if not pages:
+            self.logger.warning(
+                "No pages to analyze for %s — crawler returned zero pages. "
+                "Crawl errors: %s",
+                config.get("site_url", "unknown"),
+                state.get("crawl_errors", []),
+            )
+            state["page_analyses"] = []
+            return state
+
         for i, page in enumerate(pages):
             if "error" in page:
                 continue

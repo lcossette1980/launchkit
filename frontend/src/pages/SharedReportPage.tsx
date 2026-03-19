@@ -51,9 +51,12 @@ export default function SharedReportPage() {
 
   const r = data.results;
   const exec = r.executive_summary ?? {};
-  const scores: Scores = r.website_analysis?.overall_scores ?? {} as Scores;
+  const web = r.website_analysis ?? {};
+  const scores: Scores = web.overall_scores ?? {} as Scores;
   const strategy = r.gtm_strategy ?? {};
   const roadmap = strategy.implementation_roadmap ?? {};
+  const crawlFailed = web.crawl_failed === true || web.overall_scores === null;
+  const scoresAreEmpty = !web.overall_scores || Object.values(web.overall_scores).every(v => v === 0);
 
   return (
     <div className="min-h-screen bg-bg">
@@ -81,6 +84,27 @@ export default function SharedReportPage() {
         </div>
 
         {/* Executive Summary */}
+        {crawlFailed && (
+          <section className="mb-6">
+            <div className="bg-warning/10 border border-warning/40 rounded-xl p-5">
+              <div className="flex gap-2.5 items-start">
+                <span className="text-warning text-lg shrink-0">&#9888;</span>
+                <div>
+                  <p className="font-semibold text-sm text-warning mb-1">Website Crawl Failed</p>
+                  <p className="text-sm leading-relaxed">
+                    We were unable to crawl this website. The site may be down, blocking automated access, or the URL may be incorrect.
+                    Website-specific scores are unavailable. The remaining analysis is based on publicly available information.
+                  </p>
+                  {web.crawl_errors && web.crawl_errors.length > 0 && (
+                    <ul className="mt-2 text-xs text-text2 space-y-1 list-disc pl-4">
+                      {web.crawl_errors.map((err: string, i: number) => <li key={i}>{err}</li>)}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
         {exec.overview && (
           <section className="mb-6">
             <h2 className="text-accent2 text-xs font-semibold uppercase tracking-wider mb-3">Executive Summary</h2>
@@ -91,7 +115,23 @@ export default function SharedReportPage() {
         )}
 
         {/* Scores */}
-        {Object.keys(scores).length > 0 && (
+        {(crawlFailed || scoresAreEmpty) && (
+          <section className="mb-6">
+            <h2 className="text-accent2 text-xs font-semibold uppercase tracking-wider mb-3">Website Scores</h2>
+            <div className="bg-warning/10 border border-warning/40 rounded-xl p-5">
+              <div className="flex gap-2.5 items-start">
+                <span className="text-warning text-lg shrink-0">&#9888;</span>
+                <div>
+                  <p className="font-semibold text-sm text-warning mb-1">Scores Unavailable</p>
+                  <p className="text-sm text-text2">
+                    {"We couldn't fully analyze this website. The site may be down, blocking automated access, or the URL may be incorrect. Website scores could not be generated for this analysis."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+        {!crawlFailed && !scoresAreEmpty && Object.keys(scores).length > 0 && (
           <section className="mb-6">
             <h2 className="text-accent2 text-xs font-semibold uppercase tracking-wider mb-3">Website Scores</h2>
             <div className="grid grid-cols-5 gap-3">

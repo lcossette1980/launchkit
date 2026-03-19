@@ -31,8 +31,10 @@ class WebsiteAnalysisSchema(BaseModel):
     """Aggregated website analysis across all pages."""
 
     pages_analyzed: list[PageAnalysisSchema] = Field(default_factory=list)
-    overall_scores: ScoresSchema = Field(default_factory=ScoresSchema)
+    overall_scores: ScoresSchema | None = Field(default_factory=ScoresSchema)
     top_strengths: list[str] = Field(default_factory=list)
     top_weaknesses: list[str] = Field(default_factory=list)
     top_recommendations: list[str] = Field(default_factory=list)
     quick_wins: list[str] = Field(default_factory=list)
+    crawl_failed: bool = False
+    crawl_errors: list[str] = Field(default_factory=list)
