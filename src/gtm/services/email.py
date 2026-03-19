@@ -60,11 +60,19 @@ def send_magic_link(settings: Settings, email: str, token: str) -> None:
     msg.attach(MIMEText(html_body, "html"))
 
     try:
-        with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
-            server.starttls()
-            if settings.smtp_user:
-                server.login(settings.smtp_user, settings.smtp_password)
-            server.sendmail(settings.smtp_from, [email], msg.as_string())
+        if settings.smtp_port == 465:
+            # Port 465 = implicit SSL (SMTP_SSL)
+            with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port) as server:
+                if settings.smtp_user:
+                    server.login(settings.smtp_user, settings.smtp_password)
+                server.sendmail(settings.smtp_from, [email], msg.as_string())
+        else:
+            # Port 587 = STARTTLS
+            with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
+                server.starttls()
+                if settings.smtp_user:
+                    server.login(settings.smtp_user, settings.smtp_password)
+                server.sendmail(settings.smtp_from, [email], msg.as_string())
         # Redact email in production logs
         masked = email[:2] + "***@" + email.split("@")[-1] if "@" in email else "***"
         logger.info("Magic link email sent to %s", masked)
