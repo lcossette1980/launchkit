@@ -269,10 +269,49 @@ Tie metrics to the actual funnel and audience: {config['audience_primary']}.
             ))
         return CompetitorAnalysisSchema(competitors=competitors)
 
-    @staticmethod
-    def _safe_parse(data: dict, schema_cls: type):
-        """Safely parse data into a schema, returning defaults on failure."""
+    def _safe_parse(self, data: dict, schema_cls: type):
+        """Safely parse data into a schema, returning defaults on failure.
+
+        On validation error, attempts to salvage partial data by stripping
+        invalid items from lists (e.g., keep 14 valid experiments even if
+        1 has an out-of-range score).
+        """
         try:
             return schema_cls.model_validate(data)
+        except Exception as e:
+            self.logger.warning(
+                "Schema validation failed for %s: %s — attempting partial salvage",
+                schema_cls.__name__, str(e)[:200],
+            )
+
+        # Try to salvage list fields by validating items individually
+        salvaged = {}
+        for key, value in data.items():
+            if isinstance(value, list):
+                valid_items = []
+                for item in value:
+                    try:
+                        # Try to find the item schema from the field annotation
+                        field_info = schema_cls.model_fields.get(key)
+                        if field_info and hasattr(field_info.annotation, '__args__'):
+                            item_cls = field_info.annotation.__args__[0]
+                            valid_items.append(item_cls.model_validate(item))
+                        else:
+                            valid_items.append(item)
+                    except Exception:
+                        self.logger.debug("Skipping invalid item in %s.%s", schema_cls.__name__, key)
+                        continue
+                salvaged[key] = valid_items
+            else:
+                salvaged[key] = value
+
+        try:
+            result = schema_cls.model_validate(salvaged)
+            self.logger.info(
+                "Salvaged %s with partial data",
+                schema_cls.__name__,
+            )
+            return result
         except Exception:
+            self.logger.error("Could not salvage %s — returning defaults", schema_cls.__name__)
             return schema_cls()
