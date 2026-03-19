@@ -145,11 +145,21 @@ def create_app() -> FastAPI:
     # ── Serve frontend ──────────────────────────────────
     from fastapi.staticfiles import StaticFiles
 
+    # Try multiple paths for frontend dist (editable dev install vs production)
     _project_root = Path(__file__).resolve().parent.parent.parent.parent
-    _frontend_dist = _project_root / "frontend" / "dist"
+    _frontend_dist = None
+    for candidate in [
+        Path("/app/frontend/dist"),                    # Docker production
+        _project_root / "frontend" / "dist",           # Editable dev install
+        Path.cwd() / "frontend" / "dist",              # CWD fallback
+    ]:
+        if candidate.exists() and (candidate / "index.html").exists():
+            _frontend_dist = candidate
+            break
+
     _legacy_html = Path(__file__).parent / "static" / "index.html"
 
-    if _frontend_dist.exists() and (_frontend_dist / "index.html").exists():
+    if _frontend_dist:
         # Serve built React SPA
         _assets = _frontend_dist / "assets"
         if _assets.exists():
@@ -205,10 +215,15 @@ def create_app() -> FastAPI:
 
         logger.info("Serving React SPA from %s", _frontend_dist)
     else:
-        @app.get("/")
-        async def index():
-            return FileResponse(str(_legacy_html), media_type="text/html")
-
-        logger.info("Serving legacy HTML (React build not found at %s)", _frontend_dist)
+        if _legacy_html.exists():
+            @app.get("/")
+            async def index():
+                return FileResponse(str(_legacy_html), media_type="text/html")
+            logger.info("Serving legacy HTML from %s", _legacy_html)
+        else:
+            @app.get("/")
+            async def index():
+                return {"error": "Frontend not found", "health": "/health"}
+            logger.warning("No frontend found — API-only mode")
 
     return app
