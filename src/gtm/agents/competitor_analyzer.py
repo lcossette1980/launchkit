@@ -16,7 +16,7 @@ class CompetitorAnalyzerAgent(BaseAgent):
     async def run(self, state: dict) -> dict:
         config = state["config"]
         competitor_urls = state.get("market_research", {}).get("competitor_urls", [])
-        max_competitors = config.get("max_competitors", 5)
+        max_competitors = config.get("max_competitors", 8)
 
         await self._report_progress(
             state.get("job_id", ""), 50,

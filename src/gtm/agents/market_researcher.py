@@ -123,8 +123,9 @@ Based on search results and competitor landscape, return ONLY valid JSON:
         # Filter
         filtered = self._filter_competitor_urls(all_urls)
 
+        # Return extra candidates so downstream filtering still yields ~5 good ones
         return {
-            "competitor_urls": filtered[:10],
+            "competitor_urls": filtered[:15],
             "market_queries": queries,
         }
 

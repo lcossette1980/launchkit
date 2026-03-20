@@ -36,7 +36,7 @@ export default function LoginPage() {
 
         <p className="text-text2/70 text-xs mb-4">Enter your email and we'll send a magic link — no password needed.</p>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form method="post" onSubmit={handleSubmit} className="space-y-3">
           <input
             type="email"
             value={email}

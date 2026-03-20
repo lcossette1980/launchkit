@@ -44,11 +44,29 @@ class PageAnalyzerAgent(BaseAgent):
                 text_sample = BeautifulSoup(
                     page.get("content", ""), "html.parser"
                 ).get_text(separator="\n")
-                text_sample = re.sub(r"\s+", " ", text_sample)[:1500]
+                text_sample = re.sub(r"\s+", " ", text_sample)[:3000]
             except Exception:
                 text_sample = ""
 
             perf = page.get("metrics", {})
+
+            # Serialize structured data with priority ordering —
+            # headings, CTAs, forms, and meta are most useful for analysis;
+            # links and images are large arrays that can be truncated.
+            sd = page.get("structured_data", {})
+            priority_data = {
+                "headings": sd.get("headings", []),
+                "ctas": sd.get("ctas", []),
+                "forms": sd.get("forms", []),
+                "meta": sd.get("meta", {}),
+            }
+            secondary_data = {
+                "links": sd.get("links", [])[:20],
+                "images": sd.get("images", [])[:10],
+            }
+            structured_str = json.dumps(
+                {**priority_data, **secondary_data}, indent=2
+            )[:3000]
 
             prompt = f"""Analyze this webpage and return ONLY valid JSON matching this schema:
 {{
@@ -68,9 +86,9 @@ Rules:
 Page URL: {page['url']}
 Title: {page.get('title', '')}
 Performance (ms): loadTime={perf.get('loadTime', 'n/a')} domReady={perf.get('domReady', 'n/a')} firstPaint={perf.get('firstPaint', 'n/a')}
-Structured Data (truncated):
-{json.dumps(page.get('structured_data', {}), indent=2)[:1000]}
-Visible Text (truncated):
+Structured Data:
+{structured_str}
+Visible Text:
 {text_sample}"""
 
             analysis = await self._generate_json(

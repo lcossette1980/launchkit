@@ -52,10 +52,15 @@ class WebTools:
         """Navigate to URL and extract content with optional interactive handling."""
         try:
             response = await self.page.goto(
-                url, wait_until="domcontentloaded", timeout=20000
+                url, wait_until="domcontentloaded", timeout=25000
             )
-            await self.page.wait_for_load_state("domcontentloaded")
-            await asyncio.sleep(1)  # Give JS time to initialize
+            # Wait for network idle to ensure React/SPA content is fully rendered
+            try:
+                await self.page.wait_for_load_state("networkidle", timeout=10000)
+            except Exception:
+                # Fall back gracefully if networkidle times out (e.g. streaming pages)
+                await asyncio.sleep(2)
+            await asyncio.sleep(1)  # Extra buffer for late-rendering components
 
             if enable_interaction:
                 await self._interact_with_page_elements()
@@ -179,11 +184,11 @@ class WebTools:
             """() => {
                 const headings = Array.from(document.querySelectorAll('h1, h2, h3')).map(h => ({
                     level: h.tagName,
-                    text: h.innerText.trim()
+                    text: (h.textContent || '').trim()
                 }));
 
                 const links = Array.from(document.querySelectorAll('a[href]')).map(a => ({
-                    text: a.innerText.trim(),
+                    text: (a.textContent || '').trim(),
                     href: a.href,
                     external: !a.href.includes(window.location.hostname),
                     is_navigation: a.closest('nav') !== null || a.closest('[role="navigation"]') !== null,
@@ -211,8 +216,8 @@ class WebTools:
                 const ctas = Array.from(document.querySelectorAll(
                     'button, .btn, .button, [class*="cta"], [href*="contact"], [href*="demo"], [href*="trial"]'
                 ))
-                    .map(el => el.innerText.trim())
-                    .filter(text => text.length > 0);
+                    .map(el => (el.textContent || '').trim())
+                    .filter(text => text.length > 0 && text.length < 200);
 
                 const meta = {};
                 document.querySelectorAll('meta').forEach(tag => {
