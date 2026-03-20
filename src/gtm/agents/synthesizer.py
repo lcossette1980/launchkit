@@ -51,15 +51,18 @@ class SynthesizerAgent(BaseAgent):
             crawl_errors=crawl_errors,
         )
 
-        # 4. Assemble the canonical report
+        # 4. Clean brand info — fix typos in user-provided text
+        cleaned_brand = await self._clean_brand_info(config)
+
+        # 5. Assemble the canonical report
         report = FullReportSchema(
             brand_info=BrandInfoSchema(
-                brand=config["brand"],
+                brand=cleaned_brand.get("brand", config["brand"]),
                 url=config["site_url"],
-                audience_primary=config.get("audience_primary", ""),
-                audience_secondary=config.get("audience_secondary", ""),
-                main_offers=config.get("main_offers", ""),
-                usp_key=config.get("usp_key", ""),
+                audience_primary=cleaned_brand.get("audience_primary", config.get("audience_primary", "")),
+                audience_secondary=cleaned_brand.get("audience_secondary", config.get("audience_secondary", "")),
+                main_offers=cleaned_brand.get("main_offers", config.get("main_offers", "")),
+                usp_key=cleaned_brand.get("usp_key", config.get("usp_key", "")),
                 business_size=config.get("business_size", ""),
                 monthly_budget=config.get("monthly_budget", ""),
             ),
@@ -86,6 +89,44 @@ class SynthesizerAgent(BaseAgent):
 
         await self._report_progress(state.get("job_id", ""), 100, "Analysis complete")
         return state
+
+    async def _clean_brand_info(self, config: dict) -> dict:
+        """Fix typos and clean up user-provided brand info text."""
+        fields_to_clean = {
+            "brand": config.get("brand", ""),
+            "audience_primary": config.get("audience_primary", ""),
+            "audience_secondary": config.get("audience_secondary", ""),
+            "main_offers": config.get("main_offers", ""),
+            "usp_key": config.get("usp_key", ""),
+        }
+
+        # Only clean non-empty fields
+        non_empty = {k: v for k, v in fields_to_clean.items() if v.strip()}
+        if not non_empty:
+            return fields_to_clean
+
+        prompt = f"""Fix spelling and grammar errors in these brand info fields.
+Return ONLY valid JSON with the corrected text. Do NOT change the meaning,
+add new information, or rewrite — only fix typos and obvious misspellings.
+If a field is already correct, return it unchanged.
+
+{json.dumps(non_empty, indent=2)}"""
+
+        try:
+            cleaned = await self._generate_json(
+                prompt,
+                required_keys=list(non_empty.keys()),
+                brand=config.get("brand", ""),
+            )
+            # Merge cleaned fields back, keeping originals for any missing keys
+            result = dict(fields_to_clean)
+            for k, v in cleaned.items():
+                if k in result and isinstance(v, str) and v.strip():
+                    result[k] = v
+            return result
+        except Exception:
+            self.logger.warning("Brand info cleaning failed — using originals")
+            return fields_to_clean
 
     async def _generate_executive_summary(self, state: dict) -> ExecutiveSummarySchema:
         """Generate narrative executive summary."""

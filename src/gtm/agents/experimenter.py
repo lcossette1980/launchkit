@@ -43,9 +43,32 @@ class ExperimenterAgent(BaseAgent):
                 f"{json.dumps(state.get('gtm_strategy', {}).get('quick_wins', []), indent=2, default=str)[:500]}"
             )
         else:
+            # Extract quantitative baselines from page analysis scores
+            score_baselines = {}
+            for pa in page_analyses:
+                scores = pa.get("scores", {})
+                page_label = pa.get("url", "").split("/")[-1] or "homepage"
+                for metric, value in scores.items():
+                    if isinstance(value, (int, float)) and value > 0:
+                        key = f"{page_label}_{metric}"
+                        score_baselines[key] = value
+
+            # Calculate overall averages
+            for metric in ["clarity", "audience_fit", "conversion", "seo", "ux"]:
+                values = [
+                    pa.get("scores", {}).get(metric, 0)
+                    for pa in page_analyses
+                    if isinstance(pa.get("scores", {}).get(metric), (int, float))
+                ]
+                if values:
+                    score_baselines[f"overall_{metric}"] = round(sum(values) / len(values))
+
             findings_context = (
                 f"Key findings to base experiments on:\n"
-                f"{json.dumps(page_analyses[:2], indent=2, default=str)[:1500]}\n"
+                f"{json.dumps(page_analyses[:2], indent=2, default=str)[:1500]}\n\n"
+                f"CURRENT BASELINE METRICS (use these for experiment baselines):\n"
+                f"{json.dumps(score_baselines, indent=2)}\n\n"
+                f"Strategy quick wins:\n"
                 f"{json.dumps(state.get('gtm_strategy', {}).get('quick_wins', []), indent=2, default=str)[:500]}"
             )
 
@@ -72,6 +95,10 @@ Rules:
 - Base experiments on actual findings from the analysis
 - Be specific — reference actual pages, competitors, or opportunities found
 - Prioritize experiments achievable within budget: {config.get('monthly_budget', '$500-$2000')}
+- IMPORTANT: Use the CURRENT BASELINE METRICS provided below to set realistic
+  baseline and target values. For example, if overall_conversion is 60, set
+  baseline to 60 and target to 70-75. Never leave baseline or target as null
+  when baseline metrics are available.
 
 {findings_context}
 """

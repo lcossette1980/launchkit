@@ -69,7 +69,7 @@ class CopywriterAgent(BaseAgent):
     "problem": ["pain point 1", ...],
     "solution": ["how we solve it 1", ...],
     "benefits": ["benefit 1", ...],
-    "social_proof": ["proof point 1", ...],
+    "social_proof": ["[DRAFT TEMPLATE] proof point 1", ...],
     "faq": ["Q: question? A: answer", ...]
   }}
 }}
@@ -88,7 +88,10 @@ VOICE & TONE GUIDELINES:
   someone in the target audience FOR someone in the target audience.
 - Use concrete numbers, outcomes, and specifics over vague promises.
 - Headlines should be A/B testable with clear value propositions.
-- Social proof quotes should sound like real people, not marketing copy.
+- Social proof items are DRAFT TEMPLATES for the user to customize with real customer
+  quotes. Prefix each with "[DRAFT TEMPLATE]" so users know these are placeholders.
+  Use realistic scenarios but make it clear these are examples to be replaced with
+  actual testimonials. Use placeholder names like "[Customer Name]" not fake names.
 """
 
         copy_kit = await self._generate_json(
