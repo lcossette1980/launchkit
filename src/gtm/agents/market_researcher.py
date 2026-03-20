@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from gtm.agents.base import BaseAgent
 from gtm.tools.search import SearchTools
 
@@ -107,6 +109,30 @@ Based on search results and competitor landscape, return ONLY valid JSON:
         # Include brand name as ONE supplementary query, not the primary one
         if brand:
             queries.append(f'"{brand}" competitors alternatives{negatives}')
+
+        # Fallback queries when offers/usp are empty — derive from brand
+        # name, audience, and site URL to ensure we always have search queries
+        if not offers and not usp:
+            # Extract keywords from the site URL domain
+            site_url = config.get("site_url", "")
+            domain_words = ""
+            if site_url:
+                domain = site_url.split("//")[-1].split("/")[0].split(".")[0]
+                # Split camelCase/hyphenated domain into words
+                domain_words = " ".join(
+                    w for w in re.split(r"[-_]|(?<=[a-z])(?=[A-Z])", domain)
+                    if len(w) > 2
+                )
+
+            if audience:
+                queries.append(f"tools for {audience}{negatives}")
+                queries.append(f"best software for {audience}{negatives}")
+            if domain_words:
+                queries.append(f"{domain_words} software alternatives{negatives}")
+                queries.append(f"{domain_words} tools for {audience}{negatives}")
+            if brand:
+                queries.append(f"{brand} similar tools software{negatives}")
+                queries.append(f"tools like {brand} for {audience}{negatives}")
 
         # Add LLM-suggested queries from the planner
         plan_queries = state.get("analysis_plan", {}).get("competitor_queries", [])

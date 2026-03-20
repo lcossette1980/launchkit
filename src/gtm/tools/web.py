@@ -56,11 +56,11 @@ class WebTools:
             )
             # Wait for network idle to ensure React/SPA content is fully rendered
             try:
-                await self.page.wait_for_load_state("networkidle", timeout=10000)
+                await self.page.wait_for_load_state("networkidle", timeout=8000)
             except Exception:
                 # Fall back gracefully if networkidle times out (e.g. streaming pages)
-                await asyncio.sleep(2)
-            await asyncio.sleep(1)  # Extra buffer for late-rendering components
+                pass
+            await asyncio.sleep(1)  # Buffer for late-rendering components
 
             if enable_interaction:
                 await self._interact_with_page_elements()
