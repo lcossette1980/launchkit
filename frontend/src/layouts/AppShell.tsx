@@ -26,7 +26,7 @@ export default function AppShell() {
       <nav className="border-b border-border bg-surface/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-5 flex items-center justify-between h-14">
           <div className="flex items-center gap-8">
-            <Link to="/dashboard" className="text-lg font-bold tracking-tight">
+            <Link to="/" className="text-lg font-bold tracking-tight">
               <span className="text-accent2">VC</span>
               <span className="text-text">LaunchKit</span>
             </Link>

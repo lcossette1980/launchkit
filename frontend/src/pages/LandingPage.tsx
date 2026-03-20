@@ -1,4 +1,4 @@
-import { Navigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import SEO from "../components/SEO";
 
@@ -63,7 +63,6 @@ export default function LandingPage() {
   const { user, loading } = useAuth();
 
   if (loading) return null;
-  if (user) return <Navigate to="/dashboard" replace />;
 
   return (
     <div className="min-h-screen bg-bg">
@@ -83,9 +82,15 @@ export default function LandingPage() {
             <Link to="/examples" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">Examples</Link>
             <Link to="/blog" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">Blog</Link>
             <Link to="/pricing" className="text-sm text-text2 hover:text-text transition-colors">Pricing</Link>
-            <Link to="/login" className="px-4 py-1.5 bg-accent hover:bg-accent2 text-white text-sm font-semibold rounded-lg transition-colors">
-              Sign In
-            </Link>
+            {user ? (
+              <Link to="/dashboard" className="px-4 py-1.5 bg-accent hover:bg-accent2 text-white text-sm font-semibold rounded-lg transition-colors">
+                Dashboard
+              </Link>
+            ) : (
+              <Link to="/login" className="px-4 py-1.5 bg-accent hover:bg-accent2 text-white text-sm font-semibold rounded-lg transition-colors">
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       </nav>
@@ -104,8 +109,8 @@ export default function LandingPage() {
             Not generic advice. Specific, evidence-backed recommendations tailored to your product and audience.
           </p>
           <div className="flex gap-3 justify-center flex-wrap mb-3">
-            <Link to="/login" className="px-7 py-3 bg-accent hover:bg-accent2 text-white font-semibold rounded-lg transition-colors text-[15px]">
-              Get Your Free Playbook Now
+            <Link to={user ? "/new" : "/login"} className="px-7 py-3 bg-accent hover:bg-accent2 text-white font-semibold rounded-lg transition-colors text-[15px]">
+              {user ? "Run New Analysis" : "Get Your Free Playbook Now"}
             </Link>
             <Link to="/examples" className="px-7 py-3 border border-border text-text2 hover:border-accent/50 hover:text-text font-medium rounded-lg transition-colors text-[15px]">
               See Real Examples
@@ -447,8 +452,8 @@ export default function LandingPage() {
           <p className="text-text2/50 text-xs mb-8">
             Analyzes every page. Benchmarks 5+ competitors. Produces copy you can ship today.
           </p>
-          <Link to="/login" className="px-8 py-3.5 bg-accent hover:bg-accent2 text-white font-semibold rounded-lg transition-colors text-[15px] inline-block">
-            Get Your Free Playbook Now
+          <Link to={user ? "/new" : "/login"} className="px-8 py-3.5 bg-accent hover:bg-accent2 text-white font-semibold rounded-lg transition-colors text-[15px] inline-block">
+            {user ? "Run New Analysis" : "Get Your Free Playbook Now"}
           </Link>
         </div>
       </section>
