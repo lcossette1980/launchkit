@@ -77,19 +77,30 @@ export default function LandingPage() {
             <span className="text-accent2">VC</span>LaunchKit
           </span>
           <div className="flex items-center gap-5">
-            <a href="#how-it-works" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">How It Works</a>
-            <a href="#what-you-get" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">Features</a>
-            <Link to="/examples" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">Examples</Link>
-            <Link to="/blog" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">Blog</Link>
-            <Link to="/pricing" className="text-sm text-text2 hover:text-text transition-colors">Pricing</Link>
             {user ? (
-              <Link to="/dashboard" className="px-4 py-1.5 bg-accent hover:bg-accent2 text-white text-sm font-semibold rounded-lg transition-colors">
-                Dashboard
-              </Link>
+              <>
+                <Link to="/dashboard" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">Dashboard</Link>
+                <Link to="/new" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">New Analysis</Link>
+                <Link to="/examples" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">Examples</Link>
+                <Link to="/settings" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">Settings</Link>
+                {user.is_admin && (
+                  <Link to="/admin" className="text-sm text-red-400/60 hover:text-red-400 transition-colors hidden sm:block">Admin</Link>
+                )}
+                <Link to="/dashboard" className="px-4 py-1.5 bg-accent hover:bg-accent2 text-white text-sm font-semibold rounded-lg transition-colors">
+                  Dashboard
+                </Link>
+              </>
             ) : (
-              <Link to="/login" className="px-4 py-1.5 bg-accent hover:bg-accent2 text-white text-sm font-semibold rounded-lg transition-colors">
-                Sign In
-              </Link>
+              <>
+                <a href="#how-it-works" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">How It Works</a>
+                <a href="#what-you-get" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">Features</a>
+                <Link to="/examples" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">Examples</Link>
+                <Link to="/blog" className="text-sm text-text2 hover:text-text transition-colors hidden sm:block">Blog</Link>
+                <Link to="/pricing" className="text-sm text-text2 hover:text-text transition-colors">Pricing</Link>
+                <Link to="/login" className="px-4 py-1.5 bg-accent hover:bg-accent2 text-white text-sm font-semibold rounded-lg transition-colors">
+                  Sign In
+                </Link>
+              </>
             )}
           </div>
         </div>
