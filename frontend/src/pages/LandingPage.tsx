@@ -120,10 +120,10 @@ export default function LandingPage() {
             Not generic advice. Specific, evidence-backed recommendations tailored to your product and audience.
           </p>
           <div className="flex gap-3 justify-center flex-wrap mb-3">
-            <Link to={user ? "/new" : "/login"} className="px-7 py-3 bg-accent hover:bg-accent2 text-white font-semibold rounded-lg transition-colors text-[15px]">
+            <Link to={user ? "/new" : "/login"} className="px-9 py-3.5 bg-accent hover:bg-accent2 text-white font-bold rounded-lg transition-colors text-base shadow-lg shadow-accent/25 hover:shadow-accent/40">
               {user ? "Run New Analysis" : "Get Your Free Playbook Now"}
             </Link>
-            <Link to="/examples" className="px-7 py-3 border border-border text-text2 hover:border-accent/50 hover:text-text font-medium rounded-lg transition-colors text-[15px]">
+            <Link to="/examples" className="px-7 py-3.5 border border-border text-text2 hover:border-accent/50 hover:text-text font-medium rounded-lg transition-colors text-[15px]">
               See Real Examples
             </Link>
           </div>
@@ -223,6 +223,11 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+          <div className="text-center mt-8">
+            <Link to={user ? "/new" : "/login"} className="px-7 py-3 bg-accent hover:bg-accent2 text-white font-semibold rounded-lg transition-colors text-sm shadow-lg shadow-accent/20">
+              {user ? "Run New Analysis" : "Get Your Free Playbook Now"}
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -259,6 +264,11 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
+          </div>
+          <div className="text-center mt-10">
+            <Link to={user ? "/new" : "/login"} className="px-7 py-3 bg-accent hover:bg-accent2 text-white font-semibold rounded-lg transition-colors text-sm shadow-lg shadow-accent/20">
+              {user ? "Start Your Analysis" : "Try It Free — No Credit Card"}
+            </Link>
           </div>
         </div>
       </section>

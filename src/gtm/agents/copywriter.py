@@ -78,9 +78,17 @@ class CopywriterAgent(BaseAgent):
 Audience: {config['audience_primary']}
 USP: {config.get('usp_key', '')}
 Main Offers: {config.get('main_offers', '')}
+Business Size: {config.get('business_size', 'Small Team')}
 
-Write compelling, specific copy — not generic templates. Match the brand's voice.
-Headlines should be A/B testable with clear value propositions.
+VOICE & TONE GUIDELINES:
+- Match copy to the audience's communication style. If the audience is developers
+  or technical builders, write direct, specific, jargon-aware copy — no fluffy
+  marketing speak. If the audience is non-technical, write clear and accessible copy.
+- Avoid generic SaaS boilerplate. Every line should feel like it was written BY
+  someone in the target audience FOR someone in the target audience.
+- Use concrete numbers, outcomes, and specifics over vague promises.
+- Headlines should be A/B testable with clear value propositions.
+- Social proof quotes should sound like real people, not marketing copy.
 """
 
         copy_kit = await self._generate_json(

@@ -32,7 +32,9 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold mb-1">
           <span className="text-accent2">VC</span>LaunchKit
         </h1>
-        <p className="text-text2 text-sm mb-8">AI-Powered GTM Playbooks for Builders</p>
+        <p className="text-text2 text-sm mb-6">AI-Powered GTM Playbooks for Builders</p>
+
+        <p className="text-text2/70 text-xs mb-4">Enter your email and we'll send a magic link — no password needed.</p>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
@@ -46,11 +48,13 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={sending}
-            className="w-full py-3 bg-accent hover:bg-accent2 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
+            className="w-full py-3 bg-accent hover:bg-accent2 disabled:opacity-50 text-white font-bold rounded-lg transition-colors shadow-lg shadow-accent/25"
           >
             {sending ? "Sending..." : "Send Magic Link"}
           </button>
         </form>
+
+        <p className="mt-3 text-[11px] text-text2/40">No credit card required. Your first analysis is free.</p>
 
         {message && (
           <p className={`mt-4 text-sm ${message.isError ? "text-danger" : "text-success"}`}>

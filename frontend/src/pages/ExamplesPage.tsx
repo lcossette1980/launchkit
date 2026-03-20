@@ -49,10 +49,16 @@ export default function ExamplesPage() {
           <p className="text-text2 max-w-xl mx-auto mb-3">
             Real GTM playbooks generated for real products. Each report was produced in under 10 minutes.
           </p>
-          <p className="text-text2/60 text-xs max-w-md mx-auto">
+          <p className="text-text2/60 text-xs max-w-md mx-auto mb-5">
             These are preview reports showing the executive summary, scores, and top priorities.
             Full reports include page-by-page analysis, competitor deep-dives, copy kit, email templates, and more.
           </p>
+          <Link
+            to={user ? "/new" : "/login"}
+            className="px-6 py-2.5 bg-accent hover:bg-accent2 text-white font-semibold rounded-lg transition-colors text-sm inline-block shadow-lg shadow-accent/20"
+          >
+            {user ? "Run Your Analysis" : "Get Your Free GTM Playbook"}
+          </Link>
         </div>
 
         {loading ? (

@@ -62,13 +62,32 @@ async def list_examples(db: Session = Depends(get_db)):
         else:
             industry = "SaaS"
 
+        # Truncate at sentence boundary to avoid mid-word cuts
+        if len(overview) > 300:
+            snippet = overview[:300]
+            # Find the last sentence end within the snippet
+            for sep in [". ", "! ", "? "]:
+                last = snippet.rfind(sep)
+                if last > 100:  # Ensure we keep a meaningful chunk
+                    snippet = snippet[:last + 1]
+                    break
+            else:
+                # No sentence break found; fall back to last space
+                last_space = snippet.rfind(" ")
+                if last_space > 100:
+                    snippet = snippet[:last_space] + "..."
+                else:
+                    snippet = snippet + "..."
+        else:
+            snippet = overview
+
         examples.append({
             "brand": job.brand,
             "site_url": job.site_url,
             "share_token": job.share_token,
             "industry": industry,
             "scores": scores,
-            "summary_snippet": overview[:200] + "..." if len(overview) > 200 else overview,
+            "summary_snippet": snippet,
         })
 
     return examples

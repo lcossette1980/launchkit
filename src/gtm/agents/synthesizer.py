@@ -163,6 +163,9 @@ Top experiments: {json.dumps([e.get('title', '') for e in state.get('experiments
         """Generate the analytics dashboard specification."""
         config = state["config"]
 
+        business_size = config.get("business_size", "Small Team")
+        monthly_budget = config.get("monthly_budget", "")
+
         prompt = f"""Return ONLY valid JSON. Create a dashboard spec for {config['brand']}:
 {{
   "north_star_metric": "the single most important metric",
@@ -174,7 +177,21 @@ Top experiments: {json.dumps([e.get('title', '') for e in state.get('experiments
   "alerts": [{{"metric": "...", "threshold": "...", "action": "..."}}]
 }}
 
-Tie metrics to the actual funnel and audience: {config['audience_primary']}.
+Business size: {business_size}
+Monthly budget: {monthly_budget}
+Audience: {config['audience_primary']}
+
+IMPORTANT GUIDELINES:
+- Set REALISTIC targets grounded in the business size. A solopreneur with a $500-$2000
+  budget is NOT going to hit 1000 paying customers in 12 months. Scale targets to what
+  is achievable for a {business_size} with {monthly_budget} monthly budget.
+- For solopreneurs: focus on early traction metrics (first 10-50 paying customers,
+  first $1K-$5K MRR). For small teams: moderate growth (50-200 customers, $5K-$20K MRR).
+  For established businesses: scaled targets are appropriate.
+- Alert thresholds should be calibrated to the business stage — a solopreneur with
+  3 customers doesn't need a "churn rate > 5%" alert.
+- Tracking requirements should be practical tools a {business_size} can actually implement
+  (e.g., suggest specific free/affordable analytics tools, not enterprise solutions).
 """
 
         return await self._generate_json(

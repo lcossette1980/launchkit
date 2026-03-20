@@ -23,7 +23,7 @@ class CompetitorAnalyzerAgent(BaseAgent):
             f"Analyzing {min(len(competitor_urls), max_competitors)} competitors"
         )
 
-        analyses: list[dict] = []
+        raw_analyses: list[dict] = []
         web_tools = WebTools()
         await web_tools.initialize()
 
@@ -38,13 +38,19 @@ class CompetitorAnalyzerAgent(BaseAgent):
                 analysis = await self._analyze_one(
                     web_tools, comp_url, config
                 )
-                analyses.append(analysis)
+                raw_analyses.append(analysis)
                 await asyncio.sleep(2)  # Rate limiting
         finally:
             await web_tools.close()
 
+        # Filter out failed crawls and irrelevant competitors
+        analyses = self._filter_valid_analyses(raw_analyses, config)
+
         state["competitor_analyses"] = analyses
-        self.logger.info("Analyzed %d competitors", len(analyses))
+        self.logger.info(
+            "Analyzed %d competitors (%d filtered out of %d raw)",
+            len(analyses), len(raw_analyses) - len(analyses), len(raw_analyses),
+        )
         return state
 
     async def _analyze_one(
@@ -60,6 +66,18 @@ class CompetitorAnalyzerAgent(BaseAgent):
             title = data.get("title", "")
             headings = data.get("structured_data", {}).get("headings", [])
 
+            # Detect security/bot-protection pages that return no useful content
+            title_lower = title.lower()
+            if any(indicator in title_lower for indicator in [
+                "security", "captcha", "verify", "challenge",
+                "access denied", "forbidden", "cloudflare",
+                "just a moment", "checking your browser",
+            ]):
+                return self._error_result(url, f"Security/bot protection page: {title}")
+
+            if not headings and len(title) < 5:
+                return self._error_result(url, "Page returned no meaningful content")
+
             prompt = f"""Return ONLY valid JSON. Analyze this competitor:
 {{
   "name": "",
@@ -69,13 +87,25 @@ class CompetitorAnalyzerAgent(BaseAgent):
   "key_differentiators": [],
   "strengths": [],
   "weaknesses": [],
-  "content_strategy": ""
+  "content_strategy": "",
+  "relevance_score": 0
 }}
 
 URL: {url}
 Title: {title}
 Main Headings: {json.dumps(headings[:10], indent=2)}
-Compare to our brand: {config['brand']}
+
+Our brand: {config['brand']}
+Our audience: {config['audience_primary']}
+Our offers: {config.get('main_offers', 'N/A')}
+
+IMPORTANT: Set "relevance_score" from 1-10 indicating how relevant this competitor is
+to our brand. A direct competitor offering similar products to a similar audience = 8-10.
+A tangentially related company = 4-7. A completely unrelated company = 1-3.
+
+If this page appears to be a security checkpoint, error page, or irrelevant site
+(e.g., a church platform when analyzing a dev tool), set relevance_score to 1.
+
 Provide concrete, page-grounded observations. Be specific."""
 
             result = await self._generate_json(
@@ -95,6 +125,47 @@ Provide concrete, page-grounded observations. Be specific."""
         except Exception as e:
             self.logger.warning("Error analyzing competitor %s: %s", url, e)
             return self._error_result(url, str(e))
+
+    def _filter_valid_analyses(
+        self, analyses: list[dict], config: dict
+    ) -> list[dict]:
+        """Filter out failed crawls and irrelevant competitors."""
+        valid = []
+        for a in analyses:
+            # Skip entries that had crawl errors
+            if a.get("error"):
+                self.logger.info(
+                    "Filtering out %s: crawl error — %s",
+                    a.get("url", "unknown"), a.get("error", "")[:80],
+                )
+                continue
+
+            # Skip entries with low relevance scores
+            relevance = a.get("relevance_score", 5)
+            try:
+                relevance = int(relevance)
+            except (TypeError, ValueError):
+                relevance = 5
+
+            if relevance < 4:
+                self.logger.info(
+                    "Filtering out %s: low relevance score %d",
+                    a.get("url", "unknown"), relevance,
+                )
+                continue
+
+            # Skip entries with empty/generic value propositions
+            vp = a.get("value_proposition", "")
+            if not vp or "analysis failed" in vp.lower() or "could not" in vp.lower():
+                self.logger.info(
+                    "Filtering out %s: empty or failed value proposition",
+                    a.get("url", "unknown"),
+                )
+                continue
+
+            valid.append(a)
+
+        return valid
 
     @staticmethod
     def _error_result(url: str, error: str) -> dict:
