@@ -14,6 +14,7 @@ import SettingsPage from "./pages/SettingsPage";
 import SharedReportPage from "./pages/SharedReportPage";
 import ExamplesPage from "./pages/ExamplesPage";
 import BlogPage from "./pages/BlogPage";
+import AdminPage from "./pages/AdminPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 export default function App() {
@@ -38,6 +39,7 @@ export default function App() {
               <Route path="/analysis/:id/progress" element={<ProgressPage />} />
               <Route path="/analysis/:id" element={<ResultsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/admin" element={<AdminPage />} />
             </Route>
           </Route>
 

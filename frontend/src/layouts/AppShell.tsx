@@ -8,6 +8,8 @@ const NAV_ITEMS = [
   { path: "/settings", label: "Settings" },
 ];
 
+const ADMIN_NAV = { path: "/admin", label: "Admin" };
+
 const PLAN_COLORS: Record<string, string> = {
   free: "bg-border text-text2",
   pro: "bg-accent/15 text-accent2",
@@ -42,6 +44,18 @@ export default function AppShell() {
                   {item.label}
                 </Link>
               ))}
+              {user?.is_admin && (
+                <Link
+                  to={ADMIN_NAV.path}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    location.pathname === ADMIN_NAV.path
+                      ? "bg-red-500/15 text-red-400"
+                      : "text-red-400/60 hover:text-red-400 hover:bg-red-500/10"
+                  }`}
+                >
+                  {ADMIN_NAV.label}
+                </Link>
+              )}
             </div>
           </div>
 

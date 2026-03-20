@@ -120,6 +120,7 @@ def create_app() -> FastAPI:
     )
 
     # ── Register routes ─────────────────────────────────
+    from gtm.api.routes.admin import router as admin_router
     from gtm.api.routes.analysis import router as analysis_router
     from gtm.api.routes.analytics import router as analytics_router
     from gtm.api.routes.auth import router as auth_router
@@ -132,6 +133,7 @@ def create_app() -> FastAPI:
     from gtm.api.routes.user_data import router as user_data_router
 
     app.include_router(health_router)
+    app.include_router(admin_router, prefix="/api/v1")
     app.include_router(analysis_router, prefix="/api/v1")
     app.include_router(reports_router, prefix="/api/v1")
     app.include_router(auth_router, prefix="/api/v1")

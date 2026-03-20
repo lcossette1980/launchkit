@@ -5,6 +5,7 @@ export interface User {
   name: string;
   plan: "free" | "pro" | "agency";
   email_verified: boolean;
+  is_admin?: boolean;
 }
 
 export interface LoginResponse {

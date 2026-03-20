@@ -32,6 +32,7 @@ class UserResponse(BaseModel):
     name: str
     plan: str
     email_verified: bool
+    is_admin: bool = False
 
 
 @router.post("/login")
@@ -116,4 +117,5 @@ async def me(user: User = Depends(get_current_user)):
         name=user.name,
         plan=user.plan,
         email_verified=user.email_verified,
+        is_admin=user.is_admin,
     )

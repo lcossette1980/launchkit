@@ -130,3 +130,15 @@ def get_current_tenant(
 ) -> str:
     """Return the current user's ID as tenant_id (backward compat)."""
     return user.id
+
+
+def require_admin(
+    user: User = Depends(get_current_user),
+) -> User:
+    """Require the user to be an admin. Returns 403 otherwise."""
+    if not user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+    return user

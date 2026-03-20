@@ -184,8 +184,19 @@ class UserRepository:
     def check_quota(self, user: User) -> dict:
         """Check if user has remaining analysis quota.
 
-        Returns dict with: allowed, used, limit, plan
+        Admins get unlimited scans. Returns dict with: allowed, used, limit, plan
         """
+        if user.is_admin:
+            usage = self.get_or_create_usage(user.id)
+            return {
+                "allowed": True,
+                "used": usage.analyses_used,
+                "limit": 999,
+                "plan": user.plan,
+                "max_pages": 200,
+                "max_competitors": 10,
+            }
+
         limits = get_plan_limits(user.plan)
         usage = self.get_or_create_usage(user.id)
         limit = limits["analyses_per_month"]
