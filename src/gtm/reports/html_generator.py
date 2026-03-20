@@ -92,24 +92,68 @@ class _ReportBuilder:
     def _executive_summary(self) -> str:
         summary = self.results.get("executive_summary", {})
         brand = _esc(self.brand_info.get("brand", "The brand"))
-        overview = _esc(summary.get("overview", "operates in a competitive market with significant growth potential."))
+        overview = _esc(summary.get("overview", ""))
         pages_count = len(self.website.get("pages_analyzed", []))
         comp_count = len(self.competitors.get("competitors", []))
         exp_count = len(self.experiments.get("experiments", []))
         overall_score = self._calculate_overall_score()
 
+        # Executive Snapshot — the founder-grade opening
+        biggest_problem = _esc(summary.get("biggest_problem", ""))
+        biggest_opportunity = _esc(summary.get("biggest_opportunity", ""))
+        best_next_move = _esc(summary.get("best_next_move", ""))
+        expected_impact = _esc(summary.get("expected_impact", ""))
+        top_3 = summary.get("top_3_actions", [])
+
+        snapshot = ""
+        if biggest_problem:
+            snapshot = f"""
+    <div class="exec-snapshot">
+        <div class="snapshot-grid">
+            <div class="snapshot-item problem">
+                <div class="snapshot-label">Biggest Problem</div>
+                <p>{biggest_problem}</p>
+            </div>
+            <div class="snapshot-item opportunity">
+                <div class="snapshot-label">Biggest Opportunity</div>
+                <p>{biggest_opportunity}</p>
+            </div>
+            <div class="snapshot-item next-move">
+                <div class="snapshot-label">Best Next Move</div>
+                <p>{best_next_move}</p>
+            </div>
+            <div class="snapshot-item impact">
+                <div class="snapshot-label">Expected Impact</div>
+                <p>{expected_impact}</p>
+            </div>
+        </div>
+    </div>"""
+
+        actions_html = ""
+        if top_3:
+            actions_items = ""
+            for i, action in enumerate(top_3[:3], 1):
+                actions_items += f'<div class="action-item"><span class="action-num">{i}</span><p>{_esc(str(action))}</p></div>'
+            actions_html = f"""
+    <div class="top-actions">
+        <h3>Your Top 3 Actions for the Next 14 Days</h3>
+        {actions_items}
+    </div>"""
+
         return f"""
 <div class="section">
     <h2>Executive Summary</h2>
-    <p><strong>{brand}</strong> {overview}</p>
+    {snapshot}
+    {actions_html}
     <div class="metric-grid">
         {_metric_card(str(pages_count), "Pages Analyzed")}
-        {_metric_card(str(comp_count), "Competitors Analyzed")}
-        {_metric_card(str(exp_count), "Experiments Proposed")}
-        {_metric_card(f"{overall_score}%", "Overall Readiness")}
+        {_metric_card(str(comp_count), "Competitors")}
+        {_metric_card(str(exp_count), "Experiments")}
+        {_metric_card(f"{overall_score}%", "Readiness")}
     </div>
+    {f'<h3>Overview</h3><p>{overview}</p>' if overview else ''}
     <h3>Key Findings</h3>
-    {_bullet_list(summary.get("key_findings", ["Website analysis reveals opportunities for optimization", "Market positioning can be strengthened", "Clear GTM strategy identified with quick wins"]))}
+    {_bullet_list(summary.get("key_findings", []))}
     <h3>Top Priorities</h3>
     {_bullet_list(summary.get("top_priorities", []))}
 </div>"""
@@ -140,25 +184,41 @@ class _ReportBuilder:
 </div>"""
 
     def _market_insights(self) -> str:
-        target = _esc(self.market.get("target_audience", "Professional organizations seeking AI transformation"))
-        landscape = _esc(self.market.get("competitive_landscape", "The market is evolving rapidly."))
-        return f"""
-<div class="section">
-    <h2>Market Insights</h2>
-    <h3>Market Trends</h3>
-    {_bullet_list(self.market.get("trends", []))}
-    <h3>Target Audience</h3>
-    <div class="list-item"><p>{target}</p></div>
-    <h3>Competitive Landscape</h3>
-    <p>{landscape}</p>
-    <h3>Keyword Opportunities</h3>
-    {_tag_list(self.market.get("keyword_opportunities", []))}
-    <h3>Content Topics</h3>
-    {_bullet_list(self.market.get("content_topics", []))}
-</div>"""
+        target = _esc(self.market.get("target_audience", ""))
+        landscape = _esc(self.market.get("competitive_landscape", ""))
+        trends = self.market.get("trends", [])
+        keywords = self.market.get("keyword_opportunities", [])
+        topics = self.market.get("content_topics", [])
+
+        # Compress: only show target audience + keywords + top 5 topics
+        # Skip generic trends and landscape paragraphs that add little value
+        out = """<div class="section">\n    <h2>Market Context</h2>"""
+        if target:
+            out += f'\n    <h3>Target Audience</h3>\n    <div class="list-item"><p>{target}</p></div>'
+        if landscape:
+            out += f'\n    <h3>Competitive Landscape</h3>\n    <p>{landscape}</p>'
+        if keywords:
+            out += f'\n    <h3>Keyword Opportunities</h3>\n    {_tag_list(keywords[:10])}'
+        if topics:
+            out += f'\n    <h3>Content Topics</h3>\n    {_bullet_list(topics[:5])}'
+        out += "\n</div>"
+        return out
 
     def _competitor_analysis(self) -> str:
         comps = self.competitors.get("competitors", [])
+
+        # If no competitors or only 1 weak result, show a minimal section
+        if not comps:
+            return ""
+        if len(comps) == 1:
+            return f"""
+<div class="section">
+    <h2>Competitor Snapshot</h2>
+    <p style="color:{COLORS['khaki']};font-style:italic">Limited competitor data available. Consider expanding the analysis with manually identified competitors.</p>
+    {_competitor_cards(comps)}
+</div>"""
+
+        # Full competitor section for 2+ competitors
         return f"""
 <div class="section">
     <h2>Competitor Analysis</h2>
@@ -169,7 +229,7 @@ class _ReportBuilder:
     </div>
     <div id="comp-overview" class="tab-content active">
         <h3>Key Competitors</h3>
-        {_competitor_cards(comps[:3])}
+        {_competitor_cards(comps[:5])}
     </div>
     <div id="comp-details" class="tab-content">
         <h3>Detailed Competitor Analysis</h3>
@@ -209,12 +269,14 @@ class _ReportBuilder:
 
     def _experiments_section(self) -> str:
         exp_list = self.experiments.get("experiments", [])
+        top_experiments = exp_list[:5]
+        remaining = exp_list[5:]
         out = """
 <div class="section">
-    <h2>Growth Experiments Backlog</h2>
-    <p>Prioritized experiments based on ICE scoring (Impact, Confidence, Effort)</p>"""
+    <h2>Growth Experiments</h2>
+    <p>Top 5 experiments ranked by ICE score (Impact &times; Confidence &div; Effort)</p>"""
 
-        for exp in exp_list[:10]:
+        for exp in top_experiments:
             title = _esc(exp.get("title", "Experiment"))
             hypothesis = _esc(exp.get("hypothesis", ""))
             metric = _esc(exp.get("metric", ""))
@@ -235,6 +297,14 @@ class _ReportBuilder:
         <p><strong>Metric:</strong> {metric}</p>
         <p>{details}</p>
     </div>"""
+
+        # Compact list of remaining experiments
+        if remaining:
+            out += '\n    <h3 style="margin-top:2rem">Additional Experiments</h3>'
+            out += '\n    <table><thead><tr><th>Experiment</th><th>ICE</th><th>Impact</th><th>Effort</th></tr></thead><tbody>'
+            for exp in remaining:
+                out += f'<tr><td>{_esc(exp.get("title", ""))}</td><td><strong>{exp.get("ice_score", "")}</strong></td><td>{exp.get("impact", "")}</td><td>{exp.get("effort", "")}</td></tr>'
+            out += '</tbody></table>'
 
         out += "\n</div>"
         return out
@@ -513,59 +583,90 @@ def _alert_table(alerts: list) -> str:
 def _styles() -> str:
     return f"""
 * {{ margin:0; padding:0; box-sizing:border-box; }}
-body {{ font-family:'Inter','Lato',sans-serif; font-weight:400; color:{COLORS['charcoal']}; background:{COLORS['bone']}; line-height:1.6; }}
-.container {{ max-width:1200px; margin:0 auto; padding:20px; }}
-h1,h2,h3,h4,h5,h6 {{ font-family:'Playfair Display',serif; font-weight:700; color:{COLORS['charcoal']}; margin-bottom:1rem; }}
-h1 {{ font-size:2.6rem; margin-bottom:1.5rem; border-bottom:none; padding-bottom:0; }}
-h2 {{ font-size:2rem; margin-top:3rem; margin-bottom:1.5rem; color:{COLORS['chestnut']}; }}
-h3 {{ font-size:1.5rem; margin-top:2rem; margin-bottom:1rem; }}
-h4 {{ font-size:1.2rem; margin-top:1.5rem; margin-bottom:0.8rem; color:{COLORS['khaki']}; }}
-.section {{ background:#fff; padding:2rem; margin-bottom:2rem; border-radius:8px; box-shadow:0 2px 10px rgba(42,42,42,.1); }}
-.hero {{ background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,{COLORS['chestnut']} 100%); color:#fff; padding:3.5rem 2rem 3rem; margin-bottom:3rem; border-radius:12px; text-align:center; }}
-.hero h1 {{ color:#fff; border-bottom:none; margin-bottom:0.5rem; font-size:2.4rem; }}
-.hero .subtitle {{ font-size:1.2rem; opacity:.85; font-weight:400; }}
-.hero-brand {{ font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:1.2rem; opacity:.7; }}
+body {{ font-family:'Inter','Lato',sans-serif; font-weight:400; color:{COLORS['charcoal']}; background:#fff; line-height:1.5; font-size:10pt; }}
+.container {{ max-width:900px; margin:0 auto; padding:12px; }}
+h1,h2,h3,h4,h5,h6 {{ font-family:'Playfair Display',serif; font-weight:700; color:{COLORS['charcoal']}; margin-bottom:0.5rem; }}
+h1 {{ font-size:1.6rem; margin-bottom:0.8rem; border-bottom:none; padding-bottom:0; }}
+h2 {{ font-size:1.3rem; margin-top:1.5rem; margin-bottom:0.8rem; color:{COLORS['chestnut']}; padding-bottom:0.3rem; border-bottom:2px solid {COLORS['pearl']}; }}
+h3 {{ font-size:1.05rem; margin-top:1rem; margin-bottom:0.5rem; }}
+h4 {{ font-size:0.95rem; margin-top:0.8rem; margin-bottom:0.4rem; color:{COLORS['khaki']}; }}
+p {{ margin-bottom:0.4rem; }}
+.section {{ background:#fff; padding:1.2rem; margin-bottom:1rem; border-radius:6px; border:1px solid {COLORS['pearl']}; }}
+.hero {{ background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,{COLORS['chestnut']} 100%); color:#fff; padding:1.5rem 1.5rem 1.2rem; margin-bottom:1.5rem; border-radius:8px; text-align:center; }}
+.hero h1 {{ color:#fff; border-bottom:none; margin-bottom:0.3rem; font-size:1.5rem; }}
+.hero .subtitle {{ font-size:0.9rem; opacity:.85; font-weight:400; }}
+.hero-brand {{ font-family:'Inter',sans-serif; font-size:0.7rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:0.6rem; opacity:.7; }}
 .hero-brand span {{ color:{COLORS['pearl']}; }}
-.metric-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:1.5rem; margin:2rem 0; }}
-.metric-card {{ background:{COLORS['pearl']}; padding:1.5rem; border-radius:8px; text-align:center; transition:transform .3s ease; }}
-.metric-card:hover {{ transform:translateY(-5px); box-shadow:0 5px 20px rgba(42,42,42,.15); }}
-.metric-value {{ font-size:2.5rem; font-weight:700; color:{COLORS['chestnut']}; font-family:'Playfair Display',serif; }}
-.metric-label {{ font-size:.9rem; text-transform:uppercase; letter-spacing:1px; color:{COLORS['charcoal']}; margin-top:.5rem; }}
-.score-bar {{ height:8px; background:{COLORS['pearl']}; border-radius:4px; overflow:hidden; margin:.5rem 0; }}
-.score-fill {{ height:100%; background:linear-gradient(90deg,{COLORS['chestnut']} 0%,{COLORS['khaki']} 100%); transition:width .5s ease; }}
-.tag {{ display:inline-block; background:{COLORS['pearl']}; color:{COLORS['charcoal']}; padding:.3rem .8rem; border-radius:20px; font-size:.85rem; margin:.3rem; font-weight:500; }}
+
+/* Executive snapshot */
+.exec-snapshot {{ margin:0.8rem 0; }}
+.snapshot-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; }}
+.snapshot-item {{ padding:0.8rem; border-radius:6px; border-left:3px solid {COLORS['khaki']}; background:{COLORS['bone']}; }}
+.snapshot-item.problem {{ border-left-color:{COLORS['chestnut']}; }}
+.snapshot-item.opportunity {{ border-left-color:#4a7c59; }}
+.snapshot-item.next-move {{ border-left-color:#2a6496; }}
+.snapshot-item.impact {{ border-left-color:{COLORS['khaki']}; }}
+.snapshot-label {{ font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:700; color:{COLORS['khaki']}; margin-bottom:0.2rem; }}
+.snapshot-item.problem .snapshot-label {{ color:{COLORS['chestnut']}; }}
+.snapshot-item.opportunity .snapshot-label {{ color:#4a7c59; }}
+.snapshot-item.next-move .snapshot-label {{ color:#2a6496; }}
+.snapshot-item p {{ font-size:0.85rem; line-height:1.4; margin:0; }}
+
+/* Top 3 actions */
+.top-actions {{ margin:1rem 0; padding:1rem; background:{COLORS['bone']}; border-radius:6px; }}
+.top-actions h3 {{ margin-top:0; font-size:1rem; color:{COLORS['chestnut']}; }}
+.action-item {{ display:flex; align-items:flex-start; gap:0.6rem; margin:0.5rem 0; }}
+.action-num {{ display:flex; align-items:center; justify-content:center; min-width:1.5rem; height:1.5rem; background:{COLORS['chestnut']}; color:#fff; border-radius:50%; font-size:0.75rem; font-weight:700; }}
+.action-item p {{ margin:0; font-size:0.85rem; line-height:1.4; }}
+
+.metric-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:0.8rem; margin:0.8rem 0; }}
+.metric-card {{ background:{COLORS['bone']}; padding:0.8rem; border-radius:6px; text-align:center; }}
+.metric-value {{ font-size:1.4rem; font-weight:700; color:{COLORS['chestnut']}; font-family:'Playfair Display',serif; }}
+.metric-label {{ font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; color:{COLORS['charcoal']}; margin-top:0.2rem; }}
+.score-bar {{ height:6px; background:{COLORS['pearl']}; border-radius:3px; overflow:hidden; margin:.3rem 0; }}
+.score-fill {{ height:100%; background:linear-gradient(90deg,{COLORS['chestnut']} 0%,{COLORS['khaki']} 100%); }}
+.tag {{ display:inline-block; background:{COLORS['pearl']}; color:{COLORS['charcoal']}; padding:.2rem .6rem; border-radius:12px; font-size:.75rem; margin:.2rem; font-weight:500; }}
 .tag.primary {{ background:{COLORS['chestnut']}; color:#fff; }}
 .tag.secondary {{ background:{COLORS['khaki']}; color:#fff; }}
-table {{ width:100%; border-collapse:collapse; margin:1.5rem 0; }}
-th {{ background:{COLORS['khaki']}; color:#fff; padding:1rem; text-align:left; font-weight:500; }}
-td {{ padding:1rem; border-bottom:1px solid {COLORS['pearl']}; }}
+table {{ width:100%; border-collapse:collapse; margin:0.8rem 0; font-size:0.85rem; }}
+th {{ background:{COLORS['khaki']}; color:#fff; padding:0.5rem 0.6rem; text-align:left; font-weight:500; font-size:0.8rem; }}
+td {{ padding:0.5rem 0.6rem; border-bottom:1px solid {COLORS['pearl']}; }}
 tr:hover {{ background:{COLORS['bone']}; }}
-.list-item {{ padding:1rem; margin:.5rem 0; background:{COLORS['bone']}; border-left:4px solid {COLORS['chestnut']}; border-radius:4px; }}
+.list-item {{ padding:0.6rem 0.8rem; margin:.3rem 0; background:{COLORS['bone']}; border-left:3px solid {COLORS['chestnut']}; border-radius:3px; }}
 .list-item h4 {{ margin-top:0; }}
-.timeline {{ position:relative; padding-left:3rem; }}
-.timeline::before {{ content:''; position:absolute; left:1rem; top:0; bottom:0; width:2px; background:{COLORS['khaki']}; }}
-.timeline-item {{ position:relative; margin-bottom:2rem; }}
-.timeline-item::before {{ content:''; position:absolute; left:-2.4rem; top:.5rem; width:12px; height:12px; border-radius:50%; background:{COLORS['chestnut']}; border:3px solid #fff; box-shadow:0 0 0 3px {COLORS['pearl']}; }}
-.timeline-period {{ font-weight:700; color:{COLORS['chestnut']}; font-size:1.2rem; margin-bottom:.5rem; }}
-.experiment-card {{ background:#fff; border:1px solid {COLORS['pearl']}; border-radius:8px; padding:1.5rem; margin:1rem 0; }}
-.experiment-header {{ display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:.5rem; }}
-.ice-scores {{ display:flex; gap:1rem; flex-wrap:wrap; }}
-.ice-score {{ background:{COLORS['bone']}; padding:.5rem 1rem; border-radius:4px; text-align:center; }}
-.ice-score .label {{ font-size:.75rem; text-transform:uppercase; color:{COLORS['khaki']}; }}
-.ice-score .value {{ font-size:1.2rem; font-weight:700; color:{COLORS['chestnut']}; }}
-.copy-block {{ background:{COLORS['bone']}; padding:1.5rem; border-radius:8px; margin:1rem 0; position:relative; }}
-.copy-block h4 {{ margin-top:0; }}
-.copy-button {{ position:absolute; top:1rem; right:1rem; background:{COLORS['chestnut']}; color:#fff; border:none; padding:.5rem 1rem; border-radius:4px; cursor:pointer; font-size:.85rem; transition:background .3s ease; }}
+.timeline {{ position:relative; padding-left:2rem; }}
+.timeline::before {{ content:''; position:absolute; left:0.6rem; top:0; bottom:0; width:2px; background:{COLORS['khaki']}; }}
+.timeline-item {{ position:relative; margin-bottom:1rem; }}
+.timeline-item::before {{ content:''; position:absolute; left:-1.7rem; top:.4rem; width:8px; height:8px; border-radius:50%; background:{COLORS['chestnut']}; border:2px solid #fff; box-shadow:0 0 0 2px {COLORS['pearl']}; }}
+.timeline-period {{ font-weight:700; color:{COLORS['chestnut']}; font-size:0.95rem; margin-bottom:.3rem; }}
+.experiment-card {{ background:#fff; border:1px solid {COLORS['pearl']}; border-radius:6px; padding:0.8rem; margin:0.5rem 0; }}
+.experiment-header {{ display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:.4rem; }}
+.experiment-header h4 {{ margin:0; font-size:0.9rem; }}
+.ice-scores {{ display:flex; gap:0.5rem; flex-wrap:wrap; }}
+.ice-score {{ background:{COLORS['bone']}; padding:.3rem .6rem; border-radius:3px; text-align:center; }}
+.ice-score .label {{ font-size:.6rem; text-transform:uppercase; color:{COLORS['khaki']}; }}
+.ice-score .value {{ font-size:0.9rem; font-weight:700; color:{COLORS['chestnut']}; }}
+.copy-block {{ background:{COLORS['bone']}; padding:0.8rem; border-radius:6px; margin:0.5rem 0; position:relative; }}
+.copy-block h4 {{ margin-top:0; font-size:0.85rem; }}
+.copy-button {{ position:absolute; top:0.5rem; right:0.5rem; background:{COLORS['chestnut']}; color:#fff; border:none; padding:.3rem .6rem; border-radius:3px; cursor:pointer; font-size:.7rem; }}
 .copy-button:hover {{ background:{COLORS['khaki']}; }}
-.nav-tabs {{ display:flex; border-bottom:2px solid {COLORS['pearl']}; margin-bottom:2rem; }}
-.nav-tab {{ padding:1rem 2rem; background:none; border:none; cursor:pointer; font-size:1rem; font-weight:500; color:{COLORS['khaki']}; transition:all .3s ease; }}
-.nav-tab.active {{ color:{COLORS['chestnut']}; border-bottom:3px solid {COLORS['chestnut']}; margin-bottom:-2px; }}
+.nav-tabs {{ display:flex; border-bottom:2px solid {COLORS['pearl']}; margin-bottom:1rem; }}
+.nav-tab {{ padding:.5rem 1rem; background:none; border:none; cursor:pointer; font-size:.85rem; font-weight:500; color:{COLORS['khaki']}; }}
+.nav-tab.active {{ color:{COLORS['chestnut']}; border-bottom:2px solid {COLORS['chestnut']}; margin-bottom:-2px; }}
 .tab-content {{ display:none; }}
 .tab-content.active {{ display:block; }}
-.footer {{ text-align:center; padding:3rem 0; margin-top:4rem; border-top:1px solid {COLORS['pearl']}; color:{COLORS['khaki']}; }}
-ul, ol {{ margin:0.5rem 0 1rem 1.5rem; }}
-li {{ margin-bottom:0.3rem; }}
-@media print {{ .copy-button {{ display:none; }} .section {{ break-inside:avoid; }} }}
+.footer {{ text-align:center; padding:1.5rem 0; margin-top:2rem; border-top:1px solid {COLORS['pearl']}; color:{COLORS['khaki']}; font-size:0.8rem; }}
+ul, ol {{ margin:0.3rem 0 0.6rem 1.2rem; font-size:0.85rem; }}
+li {{ margin-bottom:0.2rem; line-height:1.4; }}
+@page {{ size:A4; margin:1.5cm; }}
+@media print {{
+    .copy-button {{ display:none; }}
+    .section {{ break-inside:avoid; page-break-inside:avoid; border:none; padding:0.8rem 0; margin-bottom:0.5rem; }}
+    .hero {{ padding:1rem; margin-bottom:1rem; -webkit-print-color-adjust:exact; print-color-adjust:exact; }}
+    .nav-tabs {{ display:none; }}
+    .tab-content {{ display:block !important; }}
+    body {{ font-size:9pt; }}
+}}
 """
 
 

@@ -99,7 +99,18 @@ def sample_report() -> dict:
                     "strengths": ["Brand recognition"],
                     "weaknesses": ["Expensive"],
                     "content_strategy": "Whitepapers and webinars",
-                }
+                },
+                {
+                    "url": "https://competitor2.com",
+                    "name": "CompetitorB",
+                    "value_proposition": "SMB AI tools",
+                    "target_audience": "Small businesses",
+                    "pricing_model": "Subscription",
+                    "key_differentiators": ["Ease of use"],
+                    "strengths": ["Low price"],
+                    "weaknesses": ["Limited features"],
+                    "content_strategy": "Blog posts and tutorials",
+                },
             ]
         },
         "gtm_strategy": {

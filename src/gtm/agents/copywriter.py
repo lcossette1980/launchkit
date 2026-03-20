@@ -92,6 +92,16 @@ VOICE & TONE GUIDELINES:
   quotes. Prefix each with "[DRAFT TEMPLATE]" so users know these are placeholders.
   Use realistic scenarios but make it clear these are examples to be replaced with
   actual testimonials. Use placeholder names like "[Customer Name]" not fake names.
+
+CRITICAL — POSITIONING CONSISTENCY:
+- All copy must match the brand's ACTUAL product positioning. Do NOT drift into
+  generic "launch kit" or "template library" language unless that is the actual product.
+- Read the brand name, USP, and main offers carefully. If the product is a GTM
+  strategy generator, write copy about GTM strategy — not about website templates.
+- If the product is an AI analysis tool, write copy about AI-powered insights —
+  not about "resources" or "toolkits."
+- Every headline, email, and ad must describe what the product ACTUALLY does,
+  not a generic version of what products in this space might do.
 """
 
         copy_kit = await self._generate_json(

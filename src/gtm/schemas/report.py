@@ -35,6 +35,11 @@ class ExecutiveSummarySchema(BaseModel):
     """Executive summary with key findings."""
 
     overview: str = ""
+    biggest_problem: str = ""
+    biggest_opportunity: str = ""
+    best_next_move: str = ""
+    expected_impact: str = ""
+    top_3_actions: list[str] = Field(default_factory=list)
     key_findings: list[str] = Field(default_factory=list)
     top_priorities: list[str] = Field(default_factory=list)
 

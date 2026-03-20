@@ -176,24 +176,39 @@ If a field is already correct, return it unchanged.
         prompt = f"""Synthesize all analysis into an executive summary for {config['brand']}.
 Return ONLY valid JSON:
 {{
-  "overview": "2-3 paragraph executive overview",
-  "key_findings": ["finding 1", "finding 2", ...at least 5],
-  "top_priorities": ["priority 1", "priority 2", ...at least 5]
+  "biggest_problem": "The single biggest problem holding this business back right now (1-2 sentences)",
+  "biggest_opportunity": "The single biggest untapped opportunity (1-2 sentences)",
+  "best_next_move": "The #1 thing to do this week (1 sentence, specific and actionable)",
+  "expected_impact": "What this move will achieve (1 sentence with a concrete outcome)",
+  "top_3_actions": [
+    "Action 1 for the next 14 days — specific, actionable, with expected result",
+    "Action 2 for the next 14 days — specific, actionable, with expected result",
+    "Action 3 for the next 14 days — specific, actionable, with expected result"
+  ],
+  "overview": "1-2 paragraph executive overview covering the full analysis",
+  "key_findings": ["finding 1", "finding 2", ...5-7 max],
+  "top_priorities": ["priority 1", "priority 2", ...3-5 max]
 }}
 
-Consider resource constraints — business size: {config.get('business_size', 'Small Team')},
-budget: {config.get('monthly_budget', '$500-$2000')}.
-Focus on high-ROI, actionable priorities.
+CRITICAL RULES:
+- The executive snapshot (biggest_problem, biggest_opportunity, best_next_move,
+  expected_impact) should be sharp and opinionated. A founder should read these
+  4 fields and immediately know what to do. No hedging.
+- top_3_actions must be exactly 3. Not 5, not 10. Three.
+- Each action must be completable within 14 days by a {config.get('business_size', 'Small Team')}
+  with a {config.get('monthly_budget', '$500-$2000')} budget.
+- top_priorities: 3-5 items max. Quality over quantity.
+- key_findings: 5-7 items max. Each must cite specific data from the analysis.
 
-Website scores: {json.dumps([a.get('scores', {}) for a in page_analyses[:3]], default=str)[:500]}
-Strategy quick wins: {json.dumps(state.get('gtm_strategy', {}).get('quick_wins', []), default=str)[:500]}
-Top experiments: {json.dumps([e.get('title', '') for e in state.get('experiments', {}).get('experiments', [])[:5]], default=str)[:300]}
+Website scores: {json.dumps([a.get('scores', {{}}) for a in page_analyses[:3]], default=str)[:500]}
+Strategy quick wins: {json.dumps(state.get('gtm_strategy', {{}}).get('quick_wins', []), default=str)[:500]}
+Top experiments: {json.dumps([e.get('title', '') for e in state.get('experiments', {{}}).get('experiments', [])[:5]], default=str)[:300]}
 """
 
         data = await self._generate_json(
             prompt,
-            required_keys=["overview", "key_findings", "top_priorities"],
-            min_counts={"key_findings": 3, "top_priorities": 3},
+            required_keys=["biggest_problem", "biggest_opportunity", "best_next_move", "top_3_actions", "overview"],
+            min_counts={"top_3_actions": 3, "key_findings": 3},
             brand=config["brand"],
             audience=config["audience_primary"],
         )
