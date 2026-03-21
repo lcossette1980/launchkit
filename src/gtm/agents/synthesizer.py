@@ -200,9 +200,9 @@ CRITICAL RULES:
 - top_priorities: 3-5 items max. Quality over quantity.
 - key_findings: 5-7 items max. Each must cite specific data from the analysis.
 
-Website scores: {json.dumps([a.get('scores', {{}}) for a in page_analyses[:3]], default=str)[:500]}
-Strategy quick wins: {json.dumps(state.get('gtm_strategy', {{}}).get('quick_wins', []), default=str)[:500]}
-Top experiments: {json.dumps([e.get('title', '') for e in state.get('experiments', {{}}).get('experiments', [])[:5]], default=str)[:300]}
+Website scores: {json.dumps([a.get('scores', dict()) for a in page_analyses[:3]], default=str)[:500]}
+Strategy quick wins: {json.dumps(state.get('gtm_strategy', dict()).get('quick_wins', []), default=str)[:500]}
+Top experiments: {json.dumps([e.get('title', '') for e in state.get('experiments', dict()).get('experiments', [])[:5]], default=str)[:300]}
 """
 
         data = await self._generate_json(
