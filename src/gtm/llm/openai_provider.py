@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import logging
 
 from openai import AsyncOpenAI
@@ -57,6 +58,56 @@ class OpenAIProvider:
             raise
 
         # Extract text from response
+        content = getattr(resp, "output_text", None)
+        if content is None:
+            try:
+                content = "".join(
+                    seg.get("content", "") if isinstance(seg, dict) else str(seg)
+                    for seg in getattr(resp, "output", [])
+                )
+            except Exception:
+                content = ""
+
+        return content or ""
+
+    @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, min=4, max=10))
+    async def generate_with_image(
+        self,
+        messages: list[dict],
+        image_data: bytes,
+        *,
+        temperature: float = 0.7,
+        max_tokens: int = 4096,
+        media_type: str = "image/png",
+    ) -> str:
+        """Generate a completion with an image attachment (vision)."""
+        # Build text from messages
+        parts: list[str] = []
+        for msg in messages:
+            role = msg.get("role", "user").upper()
+            content = msg.get("content", "")
+            parts.append(f"{role}:\n{content}")
+        input_text = "\n\n".join(parts)
+
+        b64 = base64.standard_b64encode(image_data).decode("utf-8")
+        data_url = f"data:{media_type};base64,{b64}"
+
+        # Use Responses API with image input
+        input_items = [
+            {"type": "input_image", "image_url": data_url},
+            {"type": "input_text", "text": input_text + "\n\nIMPORTANT: Return ONLY valid JSON. No markdown, no explanation."},
+        ]
+
+        try:
+            resp = await self.client.responses.create(
+                model=self.model,
+                input=input_items,
+                max_output_tokens=max_tokens,
+            )
+        except Exception:
+            logger.exception("OpenAI vision call failed (model=%s)", self.model)
+            raise
+
         content = getattr(resp, "output_text", None)
         if content is None:
             try:

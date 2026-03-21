@@ -143,7 +143,16 @@ Visible Text:
             # Vision analysis — if screenshot available, analyze visual design
             visual_observations: list[str] = []
             screenshot = page.get("screenshot")
-            if screenshot and isinstance(screenshot, bytes):
+            self.logger.info(
+                "Vision check for %s: screenshot=%s, type=%s",
+                page["url"],
+                "present" if screenshot else "missing",
+                type(screenshot).__name__ if screenshot else "n/a",
+            )
+            if screenshot and isinstance(screenshot, (bytes, bytearray)):
+                # Convert bytearray to bytes if needed
+                if isinstance(screenshot, bytearray):
+                    screenshot = bytes(screenshot)
                 try:
                     vision_prompt = f"""Look at this screenshot of {page['url']} and analyze the VISUAL design.
 
@@ -192,7 +201,9 @@ Be specific — reference what you actually see (colors, layout, size, position)
 
             # Mobile vision analysis — homepage only
             mobile_screenshot = page.get("mobile_screenshot")
-            if mobile_screenshot and isinstance(mobile_screenshot, bytes):
+            if mobile_screenshot and isinstance(mobile_screenshot, (bytes, bytearray)):
+                if isinstance(mobile_screenshot, bytearray):
+                    mobile_screenshot = bytes(mobile_screenshot)
                 try:
                     mobile_prompt = f"""Look at this MOBILE screenshot of {page['url']} (375px wide, iPhone).
 
