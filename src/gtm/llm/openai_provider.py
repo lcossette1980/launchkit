@@ -80,23 +80,36 @@ class OpenAIProvider:
         max_tokens: int = 4096,
         media_type: str = "image/png",
     ) -> str:
-        """Generate a completion with an image attachment (vision)."""
-        # Build text from messages
-        parts: list[str] = []
+        """Generate a completion with an image attachment (vision).
+
+        Uses the Responses API 'message' input type with image_url content.
+        """
+        # Build system and user text from messages
+        system_text = ""
+        user_text = ""
         for msg in messages:
-            role = msg.get("role", "user").upper()
-            content = msg.get("content", "")
-            parts.append(f"{role}:\n{content}")
-        input_text = "\n\n".join(parts)
+            if msg.get("role") == "system":
+                system_text += msg.get("content", "") + "\n"
+            else:
+                user_text += msg.get("content", "") + "\n"
 
         b64 = base64.standard_b64encode(image_data).decode("utf-8")
         data_url = f"data:{media_type};base64,{b64}"
 
-        # Use Responses API with image input
-        input_items = [
-            {"type": "input_image", "image_url": data_url},
-            {"type": "input_text", "text": input_text + "\n\nIMPORTANT: Return ONLY valid JSON. No markdown, no explanation."},
-        ]
+        # Responses API: use 'message' type with content array for vision
+        input_items = []
+        if system_text.strip():
+            input_items.append({
+                "role": "developer",
+                "content": system_text.strip(),
+            })
+        input_items.append({
+            "role": "user",
+            "content": [
+                {"type": "input_image", "image_url": data_url},
+                {"type": "input_text", "text": user_text + "\nIMPORTANT: Return ONLY valid JSON. No markdown, no explanation."},
+            ],
+        })
 
         try:
             resp = await self.client.responses.create(
