@@ -72,7 +72,7 @@ class ExperimenterAgent(BaseAgent):
                 f"{json.dumps(state.get('gtm_strategy', {}).get('quick_wins', []), indent=2, default=str)[:500]}"
             )
 
-        prompt = f"""Return ONLY valid JSON. Create 15-20 growth experiments for {config['brand']}:
+        prompt = f"""Return ONLY valid JSON. Create 8-12 growth experiments for {config['brand']}:
 {{
   "experiments": [
     {{

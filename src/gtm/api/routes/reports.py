@@ -114,7 +114,7 @@ async def download_pdf(
             await page.set_content(html, wait_until="networkidle")
             pdf_bytes = await page.pdf(
                 format="A4",
-                margin={"top": "0.5in", "right": "0.5in", "bottom": "0.5in", "left": "0.5in"},
+                margin={"top": "0.7in", "right": "0.6in", "bottom": "0.7in", "left": "0.6in"},
                 print_background=True,
             )
             await browser.close()

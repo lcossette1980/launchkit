@@ -309,10 +309,10 @@ IMPORTANT GUIDELINES:
         return WebsiteAnalysisSchema(
             pages_analyzed=pages,
             overall_scores=overall,
-            top_strengths=all_strengths[:10],
-            top_weaknesses=all_weaknesses[:10],
-            top_recommendations=all_recommendations[:10],
-            quick_wins=all_quick_wins[:10],
+            top_strengths=all_strengths[:5],
+            top_weaknesses=all_weaknesses[:5],
+            top_recommendations=all_recommendations[:5],
+            quick_wins=all_quick_wins[:5],
         )
 
     @staticmethod

@@ -293,9 +293,9 @@ class _ReportBuilder:
                 <div class="ice-score"><div class="label">ICE</div><div class="value">{ice}</div></div>
             </div>
         </div>
-        <p><strong>Hypothesis:</strong> {hypothesis}</p>
-        <p><strong>Metric:</strong> {metric}</p>
-        <p>{details}</p>
+        <p style="font-size:0.78rem"><strong>Hypothesis:</strong> {hypothesis}</p>
+        <p style="font-size:0.78rem"><strong>Metric:</strong> {metric}</p>
+        <p style="font-size:0.78rem;color:#555">{details}</p>
     </div>"""
 
         # Compact list of remaining experiments
@@ -583,89 +583,92 @@ def _alert_table(alerts: list) -> str:
 def _styles() -> str:
     return f"""
 * {{ margin:0; padding:0; box-sizing:border-box; }}
-body {{ font-family:'Inter','Lato',sans-serif; font-weight:400; color:{COLORS['charcoal']}; background:#fff; line-height:1.5; font-size:10pt; }}
-.container {{ max-width:900px; margin:0 auto; padding:12px; }}
-h1,h2,h3,h4,h5,h6 {{ font-family:'Playfair Display',serif; font-weight:700; color:{COLORS['charcoal']}; margin-bottom:0.5rem; }}
-h1 {{ font-size:1.6rem; margin-bottom:0.8rem; border-bottom:none; padding-bottom:0; }}
-h2 {{ font-size:1.3rem; margin-top:1.5rem; margin-bottom:0.8rem; color:{COLORS['chestnut']}; padding-bottom:0.3rem; border-bottom:2px solid {COLORS['pearl']}; }}
-h3 {{ font-size:1.05rem; margin-top:1rem; margin-bottom:0.5rem; }}
-h4 {{ font-size:0.95rem; margin-top:0.8rem; margin-bottom:0.4rem; color:{COLORS['khaki']}; }}
-p {{ margin-bottom:0.4rem; }}
-.section {{ background:#fff; padding:1.2rem; margin-bottom:1rem; border-radius:6px; border:1px solid {COLORS['pearl']}; }}
-.hero {{ background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,{COLORS['chestnut']} 100%); color:#fff; padding:1.5rem 1.5rem 1.2rem; margin-bottom:1.5rem; border-radius:8px; text-align:center; }}
-.hero h1 {{ color:#fff; border-bottom:none; margin-bottom:0.3rem; font-size:1.5rem; }}
-.hero .subtitle {{ font-size:0.9rem; opacity:.85; font-weight:400; }}
-.hero-brand {{ font-family:'Inter',sans-serif; font-size:0.7rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:0.6rem; opacity:.7; }}
+body {{ font-family:'Inter','Lato',sans-serif; font-weight:400; color:{COLORS['charcoal']}; background:#fff; line-height:1.55; font-size:9.5pt; }}
+.container {{ max-width:860px; margin:0 auto; padding:16px 20px; }}
+h1,h2,h3,h4,h5,h6 {{ font-family:'Playfair Display',serif; font-weight:700; color:{COLORS['charcoal']}; margin-bottom:0.4rem; }}
+h1 {{ font-size:1.4rem; margin-bottom:0.6rem; border-bottom:none; padding-bottom:0; }}
+h2 {{ font-size:1.15rem; margin-top:1.4rem; margin-bottom:0.6rem; color:{COLORS['chestnut']}; padding-bottom:0.25rem; border-bottom:1.5px solid {COLORS['pearl']}; }}
+h3 {{ font-size:0.95rem; margin-top:0.9rem; margin-bottom:0.4rem; }}
+h4 {{ font-size:0.88rem; margin-top:0.6rem; margin-bottom:0.3rem; color:{COLORS['khaki']}; }}
+p {{ margin-bottom:0.35rem; font-size:0.88rem; line-height:1.5; }}
+.section {{ background:#fff; padding:1rem 1.2rem; margin-bottom:0.8rem; border-radius:5px; border:1px solid {COLORS['pearl']}; }}
+.hero {{ background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,{COLORS['chestnut']} 100%); color:#fff; padding:1.2rem 1.4rem 1rem; margin-bottom:1.2rem; border-radius:6px; text-align:center; }}
+.hero h1 {{ color:#fff; border-bottom:none; margin-bottom:0.2rem; font-size:1.3rem; }}
+.hero .subtitle {{ font-size:0.82rem; opacity:.85; font-weight:400; }}
+.hero-brand {{ font-family:'Inter',sans-serif; font-size:0.65rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:0.5rem; opacity:.7; }}
 .hero-brand span {{ color:{COLORS['pearl']}; }}
 
 /* Executive snapshot */
-.exec-snapshot {{ margin:0.8rem 0; }}
-.snapshot-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; }}
-.snapshot-item {{ padding:0.8rem; border-radius:6px; border-left:3px solid {COLORS['khaki']}; background:{COLORS['bone']}; }}
+.exec-snapshot {{ margin:0.6rem 0; }}
+.snapshot-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; }}
+.snapshot-item {{ padding:0.6rem 0.7rem; border-radius:4px; border-left:3px solid {COLORS['khaki']}; background:{COLORS['bone']}; }}
 .snapshot-item.problem {{ border-left-color:{COLORS['chestnut']}; }}
 .snapshot-item.opportunity {{ border-left-color:#4a7c59; }}
 .snapshot-item.next-move {{ border-left-color:#2a6496; }}
 .snapshot-item.impact {{ border-left-color:{COLORS['khaki']}; }}
-.snapshot-label {{ font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:700; color:{COLORS['khaki']}; margin-bottom:0.2rem; }}
+.snapshot-label {{ font-size:0.62rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:700; color:{COLORS['khaki']}; margin-bottom:0.15rem; }}
 .snapshot-item.problem .snapshot-label {{ color:{COLORS['chestnut']}; }}
 .snapshot-item.opportunity .snapshot-label {{ color:#4a7c59; }}
 .snapshot-item.next-move .snapshot-label {{ color:#2a6496; }}
-.snapshot-item p {{ font-size:0.85rem; line-height:1.4; margin:0; }}
+.snapshot-item p {{ font-size:0.78rem; line-height:1.4; margin:0; }}
 
 /* Top 3 actions */
-.top-actions {{ margin:1rem 0; padding:1rem; background:{COLORS['bone']}; border-radius:6px; }}
-.top-actions h3 {{ margin-top:0; font-size:1rem; color:{COLORS['chestnut']}; }}
-.action-item {{ display:flex; align-items:flex-start; gap:0.6rem; margin:0.5rem 0; }}
-.action-num {{ display:flex; align-items:center; justify-content:center; min-width:1.5rem; height:1.5rem; background:{COLORS['chestnut']}; color:#fff; border-radius:50%; font-size:0.75rem; font-weight:700; }}
-.action-item p {{ margin:0; font-size:0.85rem; line-height:1.4; }}
+.top-actions {{ margin:0.8rem 0; padding:0.8rem; background:{COLORS['bone']}; border-radius:5px; }}
+.top-actions h3 {{ margin-top:0; font-size:0.9rem; color:{COLORS['chestnut']}; }}
+.action-item {{ display:flex; align-items:flex-start; gap:0.5rem; margin:0.4rem 0; }}
+.action-num {{ display:flex; align-items:center; justify-content:center; min-width:1.3rem; height:1.3rem; background:{COLORS['chestnut']}; color:#fff; border-radius:50%; font-size:0.65rem; font-weight:700; flex-shrink:0; }}
+.action-item p {{ margin:0; font-size:0.8rem; line-height:1.4; }}
 
-.metric-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:0.8rem; margin:0.8rem 0; }}
-.metric-card {{ background:{COLORS['bone']}; padding:0.8rem; border-radius:6px; text-align:center; }}
-.metric-value {{ font-size:1.4rem; font-weight:700; color:{COLORS['chestnut']}; font-family:'Playfair Display',serif; }}
-.metric-label {{ font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; color:{COLORS['charcoal']}; margin-top:0.2rem; }}
-.score-bar {{ height:6px; background:{COLORS['pearl']}; border-radius:3px; overflow:hidden; margin:.3rem 0; }}
+.metric-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:0.6rem; margin:0.6rem 0; }}
+.metric-card {{ background:{COLORS['bone']}; padding:0.6rem; border-radius:5px; text-align:center; }}
+.metric-value {{ font-size:1.15rem; font-weight:700; color:{COLORS['chestnut']}; font-family:'Playfair Display',serif; }}
+.metric-label {{ font-size:0.6rem; text-transform:uppercase; letter-spacing:0.5px; color:{COLORS['charcoal']}; margin-top:0.15rem; }}
+.score-bar {{ height:4px; background:{COLORS['pearl']}; border-radius:2px; overflow:hidden; margin:.2rem 0; }}
 .score-fill {{ height:100%; background:linear-gradient(90deg,{COLORS['chestnut']} 0%,{COLORS['khaki']} 100%); }}
-.tag {{ display:inline-block; background:{COLORS['pearl']}; color:{COLORS['charcoal']}; padding:.2rem .6rem; border-radius:12px; font-size:.75rem; margin:.2rem; font-weight:500; }}
+.tag {{ display:inline-block; background:{COLORS['pearl']}; color:{COLORS['charcoal']}; padding:.15rem .5rem; border-radius:10px; font-size:.68rem; margin:.15rem; font-weight:500; }}
 .tag.primary {{ background:{COLORS['chestnut']}; color:#fff; }}
 .tag.secondary {{ background:{COLORS['khaki']}; color:#fff; }}
-table {{ width:100%; border-collapse:collapse; margin:0.8rem 0; font-size:0.85rem; }}
-th {{ background:{COLORS['khaki']}; color:#fff; padding:0.5rem 0.6rem; text-align:left; font-weight:500; font-size:0.8rem; }}
-td {{ padding:0.5rem 0.6rem; border-bottom:1px solid {COLORS['pearl']}; }}
+table {{ width:100%; border-collapse:collapse; margin:0.6rem 0; font-size:0.78rem; }}
+th {{ background:{COLORS['khaki']}; color:#fff; padding:0.35rem 0.5rem; text-align:left; font-weight:600; font-size:0.72rem; }}
+td {{ padding:0.35rem 0.5rem; border-bottom:1px solid {COLORS['pearl']}; }}
 tr:hover {{ background:{COLORS['bone']}; }}
-.list-item {{ padding:0.6rem 0.8rem; margin:.3rem 0; background:{COLORS['bone']}; border-left:3px solid {COLORS['chestnut']}; border-radius:3px; }}
+.list-item {{ padding:0.5rem 0.7rem; margin:.25rem 0; background:{COLORS['bone']}; border-left:3px solid {COLORS['chestnut']}; border-radius:3px; }}
 .list-item h4 {{ margin-top:0; }}
-.timeline {{ position:relative; padding-left:2rem; }}
-.timeline::before {{ content:''; position:absolute; left:0.6rem; top:0; bottom:0; width:2px; background:{COLORS['khaki']}; }}
-.timeline-item {{ position:relative; margin-bottom:1rem; }}
-.timeline-item::before {{ content:''; position:absolute; left:-1.7rem; top:.4rem; width:8px; height:8px; border-radius:50%; background:{COLORS['chestnut']}; border:2px solid #fff; box-shadow:0 0 0 2px {COLORS['pearl']}; }}
-.timeline-period {{ font-weight:700; color:{COLORS['chestnut']}; font-size:0.95rem; margin-bottom:.3rem; }}
-.experiment-card {{ background:#fff; border:1px solid {COLORS['pearl']}; border-radius:6px; padding:0.8rem; margin:0.5rem 0; }}
-.experiment-header {{ display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:.4rem; }}
-.experiment-header h4 {{ margin:0; font-size:0.9rem; }}
-.ice-scores {{ display:flex; gap:0.5rem; flex-wrap:wrap; }}
-.ice-score {{ background:{COLORS['bone']}; padding:.3rem .6rem; border-radius:3px; text-align:center; }}
-.ice-score .label {{ font-size:.6rem; text-transform:uppercase; color:{COLORS['khaki']}; }}
-.ice-score .value {{ font-size:0.9rem; font-weight:700; color:{COLORS['chestnut']}; }}
-.copy-block {{ background:{COLORS['bone']}; padding:0.8rem; border-radius:6px; margin:0.5rem 0; position:relative; }}
-.copy-block h4 {{ margin-top:0; font-size:0.85rem; }}
-.copy-button {{ position:absolute; top:0.5rem; right:0.5rem; background:{COLORS['chestnut']}; color:#fff; border:none; padding:.3rem .6rem; border-radius:3px; cursor:pointer; font-size:.7rem; }}
+.timeline {{ position:relative; padding-left:1.8rem; }}
+.timeline::before {{ content:''; position:absolute; left:0.55rem; top:0; bottom:0; width:2px; background:{COLORS['khaki']}; }}
+.timeline-item {{ position:relative; margin-bottom:0.8rem; }}
+.timeline-item::before {{ content:''; position:absolute; left:-1.55rem; top:.35rem; width:7px; height:7px; border-radius:50%; background:{COLORS['chestnut']}; border:2px solid #fff; box-shadow:0 0 0 2px {COLORS['pearl']}; }}
+.timeline-period {{ font-weight:700; color:{COLORS['chestnut']}; font-size:0.85rem; margin-bottom:.2rem; }}
+.experiment-card {{ background:#fff; border:1px solid {COLORS['pearl']}; border-radius:5px; padding:0.6rem 0.7rem; margin:0.4rem 0; }}
+.experiment-header {{ display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem; flex-wrap:wrap; gap:.3rem; }}
+.experiment-header h4 {{ margin:0; font-size:0.82rem; }}
+.ice-scores {{ display:flex; gap:0.4rem; flex-wrap:wrap; }}
+.ice-score {{ background:{COLORS['bone']}; padding:.2rem .45rem; border-radius:3px; text-align:center; }}
+.ice-score .label {{ font-size:.55rem; text-transform:uppercase; color:{COLORS['khaki']}; }}
+.ice-score .value {{ font-size:0.78rem; font-weight:700; color:{COLORS['chestnut']}; }}
+.copy-block {{ background:{COLORS['bone']}; padding:0.6rem 0.7rem; border-radius:5px; margin:0.4rem 0; position:relative; }}
+.copy-block h4 {{ margin-top:0; font-size:0.78rem; }}
+.copy-button {{ position:absolute; top:0.4rem; right:0.4rem; background:{COLORS['chestnut']}; color:#fff; border:none; padding:.2rem .5rem; border-radius:3px; cursor:pointer; font-size:.62rem; }}
 .copy-button:hover {{ background:{COLORS['khaki']}; }}
-.nav-tabs {{ display:flex; border-bottom:2px solid {COLORS['pearl']}; margin-bottom:1rem; }}
-.nav-tab {{ padding:.5rem 1rem; background:none; border:none; cursor:pointer; font-size:.85rem; font-weight:500; color:{COLORS['khaki']}; }}
-.nav-tab.active {{ color:{COLORS['chestnut']}; border-bottom:2px solid {COLORS['chestnut']}; margin-bottom:-2px; }}
+.nav-tabs {{ display:flex; border-bottom:1.5px solid {COLORS['pearl']}; margin-bottom:0.8rem; }}
+.nav-tab {{ padding:.4rem .8rem; background:none; border:none; cursor:pointer; font-size:.78rem; font-weight:500; color:{COLORS['khaki']}; }}
+.nav-tab.active {{ color:{COLORS['chestnut']}; border-bottom:2px solid {COLORS['chestnut']}; margin-bottom:-1.5px; }}
 .tab-content {{ display:none; }}
 .tab-content.active {{ display:block; }}
-.footer {{ text-align:center; padding:1.5rem 0; margin-top:2rem; border-top:1px solid {COLORS['pearl']}; color:{COLORS['khaki']}; font-size:0.8rem; }}
-ul, ol {{ margin:0.3rem 0 0.6rem 1.2rem; font-size:0.85rem; }}
-li {{ margin-bottom:0.2rem; line-height:1.4; }}
-@page {{ size:A4; margin:1.5cm; }}
+.footer {{ text-align:center; padding:1.2rem 0; margin-top:1.5rem; border-top:1px solid {COLORS['pearl']}; color:{COLORS['khaki']}; font-size:0.7rem; }}
+ul, ol {{ margin:0.25rem 0 0.5rem 1.1rem; font-size:0.8rem; }}
+li {{ margin-bottom:0.15rem; line-height:1.4; }}
+@page {{ size:A4; margin:1.8cm 1.5cm; }}
 @media print {{
     .copy-button {{ display:none; }}
-    .section {{ break-inside:avoid; page-break-inside:avoid; border:none; padding:0.8rem 0; margin-bottom:0.5rem; }}
-    .hero {{ padding:1rem; margin-bottom:1rem; -webkit-print-color-adjust:exact; print-color-adjust:exact; }}
+    .section {{ break-inside:avoid; page-break-inside:avoid; border:none; padding:0.6rem 0; margin-bottom:0.4rem; }}
+    .hero {{ padding:0.8rem; margin-bottom:0.8rem; -webkit-print-color-adjust:exact; print-color-adjust:exact; }}
     .nav-tabs {{ display:none; }}
     .tab-content {{ display:block !important; }}
-    body {{ font-size:9pt; }}
+    body {{ font-size:8.5pt; }}
+    .container {{ padding:0; }}
+    p {{ font-size:0.82rem; }}
+    ul, ol {{ font-size:0.78rem; }}
 }}
 """
 
