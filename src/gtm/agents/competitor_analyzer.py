@@ -56,7 +56,7 @@ class CompetitorAnalyzerAgent(BaseAgent):
     async def _analyze_one(
         self, web_tools: WebTools, url: str, config: dict
     ) -> dict:
-        """Crawl and analyze a single competitor."""
+        """Crawl and analyze a single competitor (homepage + pricing/features)."""
         try:
             data = await web_tools.browse(url, enable_interaction=False)
 
@@ -78,6 +78,9 @@ class CompetitorAnalyzerAgent(BaseAgent):
             if not headings and len(title) < 5:
                 return self._error_result(url, "Page returned no meaningful content")
 
+            # Deep crawl: find and crawl pricing + features pages
+            extra_pages_content = await self._crawl_key_pages(web_tools, data, url)
+
             prompt = f"""Return ONLY valid JSON. Analyze this competitor:
 {{
   "name": "",
@@ -94,6 +97,7 @@ class CompetitorAnalyzerAgent(BaseAgent):
 URL: {url}
 Title: {title}
 Main Headings: {json.dumps(headings[:10], indent=2)}
+{extra_pages_content}
 
 Our brand: {config['brand']}
 Our audience: {config['audience_primary']}
@@ -106,7 +110,8 @@ A tangentially related company = 4-7. A completely unrelated company = 1-3.
 If this page appears to be a security checkpoint, error page, or irrelevant site
 (e.g., a church platform when analyzing a dev tool), set relevance_score to 1.
 
-Provide concrete, page-grounded observations. Be specific."""
+Provide concrete, page-grounded observations. Be specific.
+If pricing page data is available, extract ACTUAL pricing tiers and amounts."""
 
             result = await self._generate_json(
                 prompt,
@@ -125,6 +130,76 @@ Provide concrete, page-grounded observations. Be specific."""
         except Exception as e:
             self.logger.warning("Error analyzing competitor %s: %s", url, e)
             return self._error_result(url, str(e))
+
+    async def _crawl_key_pages(
+        self, web_tools: WebTools, homepage_data: dict, base_url: str
+    ) -> str:
+        """Find and crawl pricing/features pages from competitor homepage links."""
+        links = homepage_data.get("structured_data", {}).get("links", [])
+        if not links:
+            return ""
+
+        # Extract base domain for filtering
+        from urllib.parse import urlparse
+        parsed = urlparse(base_url)
+        domain = parsed.netloc
+
+        # Find pricing and features page URLs
+        target_patterns = {
+            "pricing": ["pricing", "plans", "price", "packages"],
+            "features": ["features", "product", "solutions", "platform", "how-it-works"],
+        }
+        found_urls: dict[str, str] = {}
+
+        for link in links:
+            if not isinstance(link, dict):
+                continue
+            href = link.get("href", "")
+            text = (link.get("text") or "").lower()
+            if not href or link.get("external", False):
+                continue
+            # Normalize URL
+            if href.startswith("/"):
+                href = f"{parsed.scheme}://{domain}{href}"
+            elif not href.startswith("http"):
+                continue
+            # Check if URL matches any target pattern
+            href_lower = href.lower()
+            for page_type, patterns in target_patterns.items():
+                if page_type in found_urls:
+                    continue
+                if any(p in href_lower or p in text for p in patterns):
+                    found_urls[page_type] = href
+                    break
+
+        if not found_urls:
+            return ""
+
+        # Crawl found pages (max 2)
+        extra_content_parts = []
+        for page_type, page_url in list(found_urls.items())[:2]:
+            try:
+                page_data = await web_tools.browse(page_url, enable_interaction=False)
+                if page_data and "error" not in page_data:
+                    page_headings = page_data.get("structured_data", {}).get("headings", [])
+                    # Extract text
+                    from bs4 import BeautifulSoup
+                    import re
+                    text = BeautifulSoup(
+                        page_data.get("content", ""), "html.parser"
+                    ).get_text(separator=" ")
+                    text = re.sub(r"\s+", " ", text)[:1500]
+                    extra_content_parts.append(
+                        f"\n--- {page_type.upper()} PAGE ({page_url}) ---\n"
+                        f"Title: {page_data.get('title', '')}\n"
+                        f"Headings: {json.dumps(page_headings[:8])}\n"
+                        f"Content: {text}"
+                    )
+                await asyncio.sleep(1)
+            except Exception as e:
+                self.logger.debug("Failed to crawl %s page %s: %s", page_type, page_url, e)
+
+        return "\n".join(extra_content_parts) if extra_content_parts else ""
 
     def _filter_valid_analyses(
         self, analyses: list[dict], config: dict

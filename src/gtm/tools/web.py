@@ -48,7 +48,7 @@ class WebTools:
         if self._playwright:
             await self._playwright.stop()
 
-    async def browse(self, url: str, *, enable_interaction: bool = True) -> dict:
+    async def browse(self, url: str, *, enable_interaction: bool = True, capture_screenshot: bool = False) -> dict:
         """Navigate to URL and extract content with optional interactive handling."""
         try:
             response = await self.page.goto(
@@ -81,11 +81,22 @@ class WebTools:
 
             structured_data = await self._extract_structured_data()
 
+            # Capture above-the-fold screenshot if requested
+            screenshot_data = None
+            if capture_screenshot:
+                try:
+                    # Viewport screenshot (not full page) — what visitors actually see
+                    screenshot_data = await self.page.screenshot(
+                        full_page=False, type="png"
+                    )
+                except Exception as e:
+                    logger.debug("Screenshot capture failed for %s: %s", url, e)
+
             # Limit content size to prevent API errors
             if len(content) > 100000:
                 content = content[:100000] + "<!-- Content truncated -->"
 
-            return {
+            result = {
                 "url": url,
                 "status": response.status if response else 200,
                 "title": title,
@@ -93,6 +104,9 @@ class WebTools:
                 "metrics": metrics,
                 "structured_data": structured_data,
             }
+            if screenshot_data:
+                result["screenshot"] = screenshot_data
+            return result
 
         except Exception as e:
             logger.error("Error browsing %s: %s", url, e)
@@ -244,3 +258,30 @@ class WebTools:
             with open(path, "wb") as f:
                 f.write(data)
         return data
+
+    async def mobile_screenshot(self, url: str) -> bytes | None:
+        """Take a mobile viewport screenshot (375x812 iPhone-style)."""
+        try:
+            mobile_ctx = await self.browser.new_context(
+                viewport={"width": 375, "height": 812},
+                user_agent=(
+                    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
+                    "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 "
+                    "Mobile/15E148 Safari/604.1"
+                ),
+                is_mobile=True,
+                has_touch=True,
+            )
+            page = await mobile_ctx.new_page()
+            await page.goto(url, wait_until="domcontentloaded", timeout=15000)
+            try:
+                await page.wait_for_load_state("networkidle", timeout=5000)
+            except Exception:
+                pass
+            await asyncio.sleep(1)
+            data = await page.screenshot(full_page=False, type="png")
+            await mobile_ctx.close()
+            return data
+        except Exception as e:
+            logger.debug("Mobile screenshot failed for %s: %s", url, e)
+            return None

@@ -68,6 +68,17 @@ class PageAnalyzerAgent(BaseAgent):
                 {**priority_data, **secondary_data}, indent=2
             )[:3000]
 
+            # Check if this page has any broken outbound links
+            broken_links = state.get("broken_links", [])
+            page_broken = [
+                bl for bl in broken_links
+                if bl.get("source_page") == page["url"]
+            ]
+            broken_context = ""
+            if page_broken:
+                broken_urls = [f"{bl['url']} (HTTP {bl.get('status', '?')})" for bl in page_broken[:5]]
+                broken_context = f"\n\nBROKEN LINKS FOUND ON THIS PAGE:\n" + "\n".join(broken_urls) + "\nInclude these in weaknesses and recommendations."
+
             prompt = f"""Analyze this webpage and return ONLY valid JSON matching this schema:
 {{
   "strengths": ["specific strength 1", ...],
@@ -119,7 +130,7 @@ Performance (ms): loadTime={perf.get('loadTime', 'n/a')} domReady={perf.get('dom
 Structured Data:
 {structured_str}
 Visible Text:
-{text_sample}"""
+{text_sample}{broken_context}"""
 
             analysis = await self._generate_json(
                 prompt,
@@ -129,6 +140,92 @@ Visible Text:
                 audience=config["audience_primary"],
             )
 
+            # Vision analysis — if screenshot available, analyze visual design
+            visual_observations: list[str] = []
+            screenshot = page.get("screenshot")
+            if screenshot and isinstance(screenshot, bytes):
+                try:
+                    vision_prompt = f"""Look at this screenshot of {page['url']} and analyze the VISUAL design.
+
+Return ONLY valid JSON:
+{{
+  "visual_strengths": ["strength 1", "strength 2"],
+  "visual_weaknesses": ["weakness 1", "weakness 2"],
+  "visual_recommendations": ["recommendation 1", "recommendation 2"]
+}}
+
+Focus ONLY on what you can SEE:
+- Is the CTA button prominent? What color is it? Does it stand out?
+- Is there clear visual hierarchy? (headline > subheadline > body)
+- Is the above-the-fold content compelling or cluttered?
+- Are there too many competing elements?
+- Is whitespace used effectively?
+- Does the color scheme feel professional or amateur?
+- Is text readable (contrast, size)?
+- Does the hero section make the product clear within 3 seconds?
+
+Be specific — reference what you actually see (colors, layout, size, position)."""
+
+                    from gtm.llm.json_parser import extract_json
+                    vision_raw = await self._generate_with_image(
+                        vision_prompt,
+                        screenshot,
+                        brand=config["brand"],
+                        audience=config["audience_primary"],
+                    )
+                    if vision_raw:
+                        vision_data = extract_json(vision_raw)
+                        if isinstance(vision_data, dict):
+                            # Merge visual findings into main analysis
+                            for vs in vision_data.get("visual_strengths", [])[:2]:
+                                analysis.setdefault("strengths", []).append(f"[Visual] {vs}")
+                            for vw in vision_data.get("visual_weaknesses", [])[:2]:
+                                analysis.setdefault("weaknesses", []).append(f"[Visual] {vw}")
+                            for vr in vision_data.get("visual_recommendations", [])[:2]:
+                                analysis.setdefault("recommendations", []).append(f"[Visual] {vr}")
+                            visual_observations = (
+                                vision_data.get("visual_strengths", [])
+                                + vision_data.get("visual_weaknesses", [])
+                            )
+                except Exception as e:
+                    self.logger.warning("Vision analysis failed for %s: %s", page["url"], e)
+
+            # Mobile vision analysis — homepage only
+            mobile_screenshot = page.get("mobile_screenshot")
+            if mobile_screenshot and isinstance(mobile_screenshot, bytes):
+                try:
+                    mobile_prompt = f"""Look at this MOBILE screenshot of {page['url']} (375px wide, iPhone).
+
+Return ONLY valid JSON:
+{{
+  "mobile_issues": ["issue 1", "issue 2"],
+  "mobile_strengths": ["strength 1"]
+}}
+
+Check:
+- Is text readable without zooming?
+- Do buttons/CTAs have adequate tap targets (44px minimum)?
+- Is there horizontal scrolling (content wider than screen)?
+- Is the navigation usable on mobile?
+- Does the hero section work on a small screen?
+- Is anything cut off, overlapping, or misaligned?"""
+
+                    mobile_raw = await self._generate_with_image(
+                        mobile_prompt,
+                        mobile_screenshot,
+                        brand=config["brand"],
+                        audience=config["audience_primary"],
+                    )
+                    if mobile_raw:
+                        mobile_data = extract_json(mobile_raw)
+                        if isinstance(mobile_data, dict):
+                            for mi in mobile_data.get("mobile_issues", [])[:2]:
+                                analysis.setdefault("weaknesses", []).append(f"[Mobile] {mi}")
+                            for ms in mobile_data.get("mobile_strengths", [])[:1]:
+                                analysis.setdefault("strengths", []).append(f"[Mobile] {ms}")
+                except Exception as e:
+                    self.logger.warning("Mobile vision analysis failed: %s", e)
+
             analyses.append({
                 "url": page["url"],
                 "title": page.get("title", ""),
@@ -137,6 +234,7 @@ Visible Text:
                 "recommendations": analysis.get("recommendations", []),
                 "scores": analysis.get("scores", {}),
                 "quick_wins": analysis.get("quick_wins", []),
+                "visual_observations": visual_observations,
             })
 
         state["page_analyses"] = analyses

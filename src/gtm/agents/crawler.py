@@ -34,10 +34,14 @@ class CrawlerAgent(BaseAgent):
         crawl_errors: list[str] = []
 
         try:
-            # 1. Crawl homepage
+            # 1. Crawl homepage (with desktop + mobile screenshots)
             self.logger.info("Discovering pages from %s", base_url)
-            homepage = await web_tools.browse(base_url)
+            homepage = await web_tools.browse(base_url, capture_screenshot=True)
             if homepage and "error" not in homepage:
+                # Also capture mobile screenshot for responsive analysis
+                mobile_shot = await web_tools.mobile_screenshot(base_url)
+                if mobile_shot:
+                    homepage["mobile_screenshot"] = mobile_shot
                 pages_data.append(homepage)
             elif homepage and "error" in homepage:
                 error_msg = homepage["error"]
@@ -94,7 +98,11 @@ class CrawlerAgent(BaseAgent):
                 )
 
                 try:
-                    page_data = await web_tools.browse(url)
+                    # Capture screenshots for key pages (first 4)
+                    take_screenshot = i < 4
+                    page_data = await web_tools.browse(
+                        url, capture_screenshot=take_screenshot
+                    )
                     if page_data and "error" not in page_data:
                         pages_data.append(page_data)
                 except Exception as e:
@@ -108,9 +116,13 @@ class CrawlerAgent(BaseAgent):
         # Deduplicate pages with identical content (SPA shells, error pages)
         pages_data, crawl_warnings = self._deduplicate_pages(pages_data)
 
+        # Check for broken internal links
+        broken_links = await self._check_broken_links(pages_data, base_url)
+
         state["pages_crawled"] = pages_data
         state["crawl_errors"] = crawl_errors
         state["crawl_warnings"] = crawl_warnings
+        state["broken_links"] = broken_links
 
         if not pages_data:
             self.logger.warning(
@@ -275,6 +287,64 @@ class CrawlerAgent(BaseAgent):
             )
 
         return deduped, warnings
+
+    async def _check_broken_links(
+        self, pages: list[dict], base_url: str
+    ) -> list[dict]:
+        """Check internal links for 404s and broken resources."""
+        import aiohttp
+
+        # Collect unique internal links from all crawled pages
+        internal_links: dict[str, str] = {}  # url -> source_page
+        for page in pages:
+            source = page.get("url", "")
+            links = page.get("structured_data", {}).get("links", [])
+            for link in links:
+                if not isinstance(link, dict):
+                    continue
+                href = link.get("href", "")
+                if not href or link.get("external", False):
+                    continue
+                if href.startswith("/"):
+                    href = f"{base_url}{href}"
+                if base_url in href and href not in internal_links:
+                    internal_links[href] = source
+
+        if not internal_links:
+            return []
+
+        # Check up to 30 links with HEAD requests
+        broken: list[dict] = []
+        urls_to_check = list(internal_links.items())[:30]
+
+        try:
+            timeout = aiohttp.ClientTimeout(total=5)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                for link_url, source_page in urls_to_check:
+                    try:
+                        async with session.head(
+                            link_url, allow_redirects=True
+                        ) as resp:
+                            if resp.status >= 400:
+                                broken.append({
+                                    "url": link_url,
+                                    "status": resp.status,
+                                    "source_page": source_page,
+                                })
+                    except Exception:
+                        broken.append({
+                            "url": link_url,
+                            "status": 0,
+                            "source_page": source_page,
+                            "error": "Connection failed",
+                        })
+        except Exception as e:
+            self.logger.warning("Broken link check failed: %s", e)
+
+        if broken:
+            self.logger.info("Found %d broken links", len(broken))
+
+        return broken
 
     @staticmethod
     def _classify_error(error_msg: str, url: str) -> str:

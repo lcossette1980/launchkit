@@ -163,6 +163,39 @@ class BaseAgent:
         self.logger.error("%s: both attempts failed to produce valid JSON", self.name)
         return retry_result if isinstance(retry_result, dict) else (first_result if isinstance(first_result, dict) else {})
 
+    async def _generate_with_image(
+        self,
+        prompt: str,
+        image_data: bytes,
+        *,
+        brand: str = "",
+        audience: str = "",
+    ) -> str:
+        """Generate a response using vision (image + text prompt)."""
+        from gtm.llm.roles import build_system_prompt, get_role_config
+
+        role_cfg = get_role_config(self.role)
+        system_prompt = build_system_prompt(self.role, brand=brand, audience=audience)
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
+        ]
+
+        provider = self._get_provider()
+
+        # Only Anthropic provider supports vision — check and fallback gracefully
+        if not hasattr(provider, "generate_with_image"):
+            self.logger.warning("Provider does not support vision — skipping image analysis")
+            return ""
+
+        return await provider.generate_with_image(
+            messages,
+            image_data,
+            temperature=role_cfg.temperature,
+            max_tokens=self.settings.max_tokens_analysis,
+        )
+
     async def _report_progress(
         self, job_id: str, pct: int, message: str
     ) -> None:
