@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import SEO from "../components/SEO";
 
@@ -61,6 +62,8 @@ const STATS = [
 /* ── Main landing page ──────────────────────────────────── */
 export default function LandingPage() {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const [heroUrl, setHeroUrl] = useState("");
 
   if (loading) return null;
 
@@ -119,12 +122,35 @@ export default function LandingPage() {
           <p className="text-text2/60 text-sm max-w-lg mx-auto mb-8">
             Not generic advice. Specific, evidence-backed recommendations tailored to your product and audience.
           </p>
-          <div className="flex gap-3 justify-center flex-wrap mb-3">
-            <Link to={user ? "/new" : "/login"} className="px-9 py-3.5 bg-accent hover:bg-accent2 text-white font-bold rounded-lg transition-colors text-base shadow-lg shadow-accent/25 hover:shadow-accent/40">
-              {user ? "Run New Analysis" : "Get Your Free Playbook Now"}
-            </Link>
-            <Link to="/examples" className="px-7 py-3.5 border border-border text-text2 hover:border-accent/50 hover:text-text font-medium rounded-lg transition-colors text-[15px]">
-              See Real Examples
+          {/* URL input form — the core product interaction */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (user) {
+                navigate("/new", { state: { prefillUrl: heroUrl } });
+              } else {
+                navigate("/login", { state: { prefillUrl: heroUrl } });
+              }
+            }}
+            className="max-w-xl mx-auto flex gap-2 mb-3"
+          >
+            <input
+              type="url"
+              value={heroUrl}
+              onChange={(e) => setHeroUrl(e.target.value)}
+              placeholder="https://yoursite.com"
+              className="flex-1 px-4 py-3.5 bg-surface border border-border rounded-lg text-sm text-text placeholder:text-text2/40 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30"
+            />
+            <button
+              type="submit"
+              className="px-7 py-3.5 bg-accent hover:bg-accent2 text-white font-bold rounded-lg transition-colors text-sm shadow-lg shadow-accent/25 hover:shadow-accent/40 whitespace-nowrap"
+            >
+              {user ? "Analyze My Site" : "Get Free Playbook"}
+            </button>
+          </form>
+          <div className="flex gap-3 justify-center mb-3">
+            <Link to="/examples" className="text-sm text-text2 hover:text-accent2 transition-colors underline underline-offset-2 decoration-text2/20">
+              See real example reports
             </Link>
           </div>
           <div className="flex items-center justify-center gap-4 text-xs text-text2/50 mt-2">
@@ -248,7 +274,7 @@ export default function LandingPage() {
               {
                 step: "02",
                 title: "9 AI agents go to work",
-                desc: "Agents crawl every page, research your market, analyze 5+ competitors, generate strategy, write copy, and build your roadmap. ~8 minutes.",
+                desc: "A planner, page analyzer, market researcher, competitor analyst, strategist, experimenter, copywriter, dashboard builder, and synthesizer — each focused on one part of your GTM plan. ~8 minutes.",
               },
               {
                 step: "03",
@@ -370,7 +396,7 @@ export default function LandingPage() {
               },
               {
                 title: "Growth experiments with ICE scores",
-                desc: "15+ prioritized experiments ranked by Impact, Confidence, and Effort. Each with a hypothesis, success metric, and implementation details.",
+                desc: "8-12 prioritized experiments ranked by Impact, Confidence, and Effort. Each with a hypothesis, success metric, and implementation details.",
               },
             ].map((f, i) => (
               <div key={i} className="bg-surface border border-border/50 rounded-xl p-5 hover:border-border transition-colors">

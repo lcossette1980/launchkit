@@ -347,6 +347,21 @@ export default function BlogPage() {
                 </Link>
               ))}
             </div>
+
+            {/* Blog CTA */}
+            <div className="mt-8 p-6 bg-surface border border-accent/20 rounded-xl text-center">
+              <h3 className="font-semibold mb-2">Get a GTM playbook for your product</h3>
+              <p className="text-sm text-text2 mb-4">
+                Paste your URL. In 10 minutes, get page-by-page fixes, competitor intel, copy you can ship today, and a 30/60/90 day plan.
+              </p>
+              <Link
+                to={user ? "/new" : "/login"}
+                className="px-6 py-2.5 bg-accent hover:bg-accent2 text-white font-semibold rounded-lg transition-colors inline-block text-sm"
+              >
+                {user ? "Run Your Analysis" : "Get Your Free Playbook"}
+              </Link>
+              <p className="text-xs text-text2/40 mt-2">Free. No credit card required.</p>
+            </div>
           </>
         )}
 

@@ -114,6 +114,49 @@ export default function PricingPage() {
           })}
         </div>
 
+        {/* FAQ */}
+        <div className="mt-16 max-w-2xl mx-auto">
+          <h2 className="text-2xl font-bold text-center mb-8">Frequently asked questions</h2>
+          <div className="space-y-4">
+            {[
+              {
+                q: "What do I get with the free plan?",
+                a: "One analysis per month with an executive summary, overall website scores, and your top 3 priorities. Enough to see the value before upgrading.",
+              },
+              {
+                q: "What's in a full Pro report?",
+                a: "Page-by-page audit with scores, 5+ competitor deep-dives, a copy kit with headlines and email templates, ad copy for 3 platforms, growth experiments ranked by ICE score, market research, and a 30/60/90 day roadmap.",
+              },
+              {
+                q: "How long does an analysis take?",
+                a: "About 8-10 minutes. 9 AI agents crawl your site, research your market, analyze competitors, and generate a complete GTM playbook.",
+              },
+              {
+                q: "Can I cancel anytime?",
+                a: "Yes. No contracts, no cancellation fees. Your plan stays active until the end of the billing period.",
+              },
+              {
+                q: "What does 'brands' mean in the plan limits?",
+                a: "A brand is a distinct website or product you analyze. Free gets 1, Pro gets 3, Agency gets unlimited. Perfect if you manage multiple products or client sites.",
+              },
+              {
+                q: "Do I need marketing experience?",
+                a: "No. Reports are written in plain language with specific, actionable steps. Every recommendation tells you what to do, why, and how.",
+              },
+            ].map((faq, i) => (
+              <details key={i} className="group bg-surface border border-border/50 rounded-xl">
+                <summary className="flex items-center justify-between p-5 cursor-pointer text-sm font-medium hover:text-accent2 transition-colors">
+                  {faq.q}
+                  <span className="text-text2 group-open:rotate-45 transition-transform text-lg ml-3">+</span>
+                </summary>
+                <div className="px-5 pb-5 pt-0 text-sm text-text2 leading-relaxed">
+                  {faq.a}
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+
         {/* Back link */}
         <div className="text-center mt-8">
           <Link
