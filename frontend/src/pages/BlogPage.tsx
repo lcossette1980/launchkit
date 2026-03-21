@@ -11,9 +11,20 @@ interface BlogPost {
   date: string;
   readTime: string;
   tags: string[];
+  featured?: boolean;
 }
 
 const POSTS: BlogPost[] = [
+  {
+    slug: "how-we-score-websites",
+    title: "How we score websites: the methodology behind VCLaunchKit's 5 metrics",
+    excerpt:
+      "Every VCLaunchKit report scores your site on clarity, audience fit, conversion, SEO, and UX. Here's exactly what each score measures, how the rubric works, and what the numbers actually mean for your business.",
+    date: "March 21, 2026",
+    readTime: "7 min read",
+    tags: ["Methodology", "Deep Dive"],
+    featured: true,
+  },
   {
     slug: "how-vclaunchkit-works",
     title: "How VCLaunchKit works: From URL to GTM playbook in 10 minutes",
@@ -44,6 +55,171 @@ const POSTS: BlogPost[] = [
 ];
 
 /* ── Post content components ─────────────────────────────── */
+
+function HowWeScoreWebsites() {
+  return (
+    <div className="space-y-6 text-[15px] leading-relaxed text-text2">
+      <p>
+        Every VCLaunchKit report gives your site a score from 0-100 on five dimensions: <strong className="text-text">Clarity</strong>, <strong className="text-text">Audience Fit</strong>, <strong className="text-text">Conversion</strong>, <strong className="text-text">SEO</strong>, and <strong className="text-text">UX</strong>.
+        These aren't arbitrary numbers. Each score follows a specific rubric, grounded in evidence from your actual pages. Here's exactly how each one works and what it means for your business.
+      </p>
+
+      <h3 className="text-xl font-semibold text-text mt-10 mb-3">Why five metrics (and why these five)</h3>
+      <p>
+        We chose these five because they cover the complete visitor journey. A visitor lands on your site (UX), tries to understand what you offer (Clarity), decides if it's for them (Audience Fit), looks for a way to take action (Conversion), and ideally found you through search in the first place (SEO). If any one of these breaks down, you lose that visitor.
+      </p>
+      <p>
+        Most website audit tools focus on technical SEO or page speed. Those matter, but they miss the human side — is your message clear? Does your CTA actually stand out? Does your copy speak to your target customer? Our scoring system covers both the technical and the human.
+      </p>
+
+      <h3 className="text-xl font-semibold text-text mt-10 mb-3">1. Clarity (0-100)</h3>
+      <p className="italic text-text/80 mb-3">Can a visitor understand what you do within 5 seconds?</p>
+      <p>Clarity measures how well your page communicates its purpose. We look at:</p>
+      <ul className="list-disc pl-6 space-y-2 mt-3">
+        <li><strong className="text-text">Headline specificity:</strong> Does the H1 state a concrete outcome, or is it vague? "Stop guessing your GTM" is specific. "Welcome to our platform" is not.</li>
+        <li><strong className="text-text">Value proposition visibility:</strong> Can the visitor see what they'll get without scrolling? Is there a clear subheadline that elaborates?</li>
+        <li><strong className="text-text">Message consistency:</strong> Do the headline, subheadline, and CTA all point in the same direction, or do they contradict each other?</li>
+        <li><strong className="text-text">Jargon level:</strong> Are you using industry terms your audience understands, or internal language they wouldn't?</li>
+      </ul>
+      <div className="bg-surface border border-border/50 rounded-lg p-4 mt-4">
+        <p className="text-xs text-accent2 font-semibold uppercase tracking-wider mb-2">Scoring rubric</p>
+        <div className="space-y-1 text-sm">
+          <p><strong className="text-text">90-100:</strong> Instantly clear value prop. No confusion about what this product does.</p>
+          <p><strong className="text-text">70-89:</strong> Purpose is clear, but messaging could be sharper or more specific.</p>
+          <p><strong className="text-text">50-69:</strong> Takes effort to understand. Mixed messages or vague copy.</p>
+          <p><strong className="text-text">30-49:</strong> Confusing. Unclear what the product or service actually is.</p>
+          <p><strong className="text-text">0-29:</strong> No discernible message or purpose.</p>
+        </div>
+      </div>
+      <p className="mt-4">
+        <strong className="text-text">What a low clarity score means for your business:</strong> Visitors bounce before they understand your product. You're paying for traffic (or working for organic traffic) and losing people in the first 5 seconds. This is typically the cheapest problem to fix — it's a copywriting issue, not a technical one.
+      </p>
+
+      <h3 className="text-xl font-semibold text-text mt-10 mb-3">2. Audience Fit (0-100)</h3>
+      <p className="italic text-text/80 mb-3">Does your content speak directly to your target customer?</p>
+      <p>Audience fit measures alignment between your content and the people you're trying to reach. We evaluate:</p>
+      <ul className="list-disc pl-6 space-y-2 mt-3">
+        <li><strong className="text-text">Language match:</strong> Are you using the words your audience uses to describe their problems? A developer audience expects different language than a marketing team.</li>
+        <li><strong className="text-text">Pain point relevance:</strong> Do you address the specific frustrations and goals of your target audience, or are you speaking in generalities?</li>
+        <li><strong className="text-text">Social proof alignment:</strong> Do your testimonials feature people who look like your target customer? A quote from a "Fortune 500 VP" won't resonate with solo developers.</li>
+        <li><strong className="text-text">Feature framing:</strong> Are features described in terms your audience cares about? "Enterprise-grade security" means nothing to an indie hacker. "Your data stays private" does.</li>
+      </ul>
+      <div className="bg-surface border border-border/50 rounded-lg p-4 mt-4">
+        <p className="text-xs text-accent2 font-semibold uppercase tracking-wider mb-2">Scoring rubric</p>
+        <div className="space-y-1 text-sm">
+          <p><strong className="text-text">90-100:</strong> Every element speaks directly to the target audience's language and needs.</p>
+          <p><strong className="text-text">70-89:</strong> Good fit, but some elements feel generic or off-target.</p>
+          <p><strong className="text-text">50-69:</strong> Partially aligned. Some content targets different personas.</p>
+          <p><strong className="text-text">30-49:</strong> Weak alignment. Mostly generic content.</p>
+          <p><strong className="text-text">0-29:</strong> Content clearly targets a different audience.</p>
+        </div>
+      </div>
+      <p className="mt-4">
+        <strong className="text-text">What a low audience fit score means:</strong> You're attracting the wrong visitors, or the right visitors don't recognize themselves in your messaging. This leads to high bounce rates from qualified traffic — the most expensive kind of waste.
+      </p>
+
+      <h3 className="text-xl font-semibold text-text mt-10 mb-3">3. Conversion (0-100)</h3>
+      <p className="italic text-text/80 mb-3">How effectively does the page drive visitors to take action?</p>
+      <p>Conversion measures the strength of your calls-to-action and the friction in your signup/purchase flow:</p>
+      <ul className="list-disc pl-6 space-y-2 mt-3">
+        <li><strong className="text-text">CTA visibility:</strong> Can visitors see the primary action without scrolling? Is it visually distinct from the rest of the page?</li>
+        <li><strong className="text-text">CTA clarity:</strong> Does the button text tell people exactly what happens next? "Get Your Free Playbook" beats "Submit" or "Learn More."</li>
+        <li><strong className="text-text">CTA repetition:</strong> Is there a CTA at multiple scroll points, or just one at the top that visitors scroll past?</li>
+        <li><strong className="text-text">Trust signals:</strong> Are there elements that reduce anxiety? "No credit card required," testimonials near the CTA, security badges, money-back guarantees.</li>
+        <li><strong className="text-text">Friction level:</strong> How many steps/fields between "I'm interested" and "I'm using it"? Every extra field costs conversions.</li>
+      </ul>
+      <div className="bg-surface border border-border/50 rounded-lg p-4 mt-4">
+        <p className="text-xs text-accent2 font-semibold uppercase tracking-wider mb-2">Scoring rubric</p>
+        <div className="space-y-1 text-sm">
+          <p><strong className="text-text">90-100:</strong> Multiple clear CTAs, low friction, strong urgency and trust signals.</p>
+          <p><strong className="text-text">70-89:</strong> CTAs present and visible, but could be stronger or repeated more.</p>
+          <p><strong className="text-text">50-69:</strong> CTAs exist but weak visibility, missing trust signals, or high friction.</p>
+          <p><strong className="text-text">30-49:</strong> Hard to find CTAs. Significant conversion barriers.</p>
+          <p><strong className="text-text">0-29:</strong> No clear conversion path at all.</p>
+        </div>
+      </div>
+      <p className="mt-4">
+        <strong className="text-text">What a low conversion score means:</strong> People understand your product and think it's relevant — but they're not taking action. This is the highest-leverage score to improve because small changes (button color, copy, placement) can produce measurable results within days.
+      </p>
+
+      <h3 className="text-xl font-semibold text-text mt-10 mb-3">4. SEO (0-100)</h3>
+      <p className="italic text-text/80 mb-3">How well is this page optimized for search engines?</p>
+      <p>SEO measures the technical and content foundations that determine whether search engines can find, understand, and rank your page:</p>
+      <ul className="list-disc pl-6 space-y-2 mt-3">
+        <li><strong className="text-text">Heading hierarchy:</strong> Is there one H1, followed by logical H2s and H3s? Do headings contain relevant keywords?</li>
+        <li><strong className="text-text">Meta tags:</strong> Does the page have a descriptive title tag and meta description? Are they the right length and keyword-optimized?</li>
+        <li><strong className="text-text">Content depth:</strong> Is there enough substantive content for search engines to understand the page's topic?</li>
+        <li><strong className="text-text">Image optimization:</strong> Do images have alt text? Are they appropriately sized?</li>
+        <li><strong className="text-text">Internal linking:</strong> Does the page link to other relevant pages on the site?</li>
+      </ul>
+      <div className="bg-surface border border-border/50 rounded-lg p-4 mt-4">
+        <p className="text-xs text-accent2 font-semibold uppercase tracking-wider mb-2">Scoring rubric</p>
+        <div className="space-y-1 text-sm">
+          <p><strong className="text-text">90-100:</strong> Excellent heading hierarchy, meta tags, keywords, and structured data.</p>
+          <p><strong className="text-text">70-89:</strong> Good basics, but missing some optimization opportunities.</p>
+          <p><strong className="text-text">50-69:</strong> Some SEO elements present but inconsistent or incomplete.</p>
+          <p><strong className="text-text">30-49:</strong> Minimal SEO effort. Missing critical elements.</p>
+          <p><strong className="text-text">0-29:</strong> No SEO optimization visible.</p>
+        </div>
+      </div>
+      <p className="mt-4">
+        <strong className="text-text">What a low SEO score means:</strong> You're invisible to people actively searching for what you offer. Unlike paid ads, SEO compounds over time — fixing these issues now means more free, qualified traffic every month going forward.
+      </p>
+
+      <h3 className="text-xl font-semibold text-text mt-10 mb-3">5. UX (0-100)</h3>
+      <p className="italic text-text/80 mb-3">Does the page feel professional, fast, and easy to use?</p>
+      <p>UX measures the overall user experience — the impression your site makes beyond the words on the page:</p>
+      <ul className="list-disc pl-6 space-y-2 mt-3">
+        <li><strong className="text-text">Load performance:</strong> How fast does the page load? We measure actual load time, DOM ready, and first paint metrics.</li>
+        <li><strong className="text-text">Navigation clarity:</strong> Can visitors find what they're looking for? Is the menu structure intuitive?</li>
+        <li><strong className="text-text">Visual hierarchy:</strong> Does the page guide the eye naturally, or is it a wall of text with no structure?</li>
+        <li><strong className="text-text">Mobile responsiveness:</strong> Does the page work on phones? Are tap targets large enough? Is text readable without zooming?</li>
+        <li><strong className="text-text">Content completeness:</strong> Is any text truncated? Are there broken images or dead links? Does everything look polished?</li>
+      </ul>
+      <div className="bg-surface border border-border/50 rounded-lg p-4 mt-4">
+        <p className="text-xs text-accent2 font-semibold uppercase tracking-wider mb-2">Scoring rubric</p>
+        <div className="space-y-1 text-sm">
+          <p><strong className="text-text">90-100:</strong> Smooth navigation, fast loading, accessible, polished design.</p>
+          <p><strong className="text-text">70-89:</strong> Good UX with minor issues (layout, responsiveness, etc.).</p>
+          <p><strong className="text-text">50-69:</strong> Functional but noticeable UX problems (truncated text, poor nav).</p>
+          <p><strong className="text-text">30-49:</strong> Significant UX barriers that hurt engagement.</p>
+          <p><strong className="text-text">0-29:</strong> Broken or unusable experience.</p>
+        </div>
+      </div>
+      <p className="mt-4">
+        <strong className="text-text">What a low UX score means:</strong> Even if your product is great, a poor user experience erodes trust. Visitors unconsciously judge your product's quality by the quality of your website. Broken layouts, slow loading, or clunky navigation signal "this team doesn't pay attention to details."
+      </p>
+
+      <h3 className="text-xl font-semibold text-text mt-10 mb-3">How the analysis actually works</h3>
+      <p>
+        Each page on your site goes through a three-layer analysis:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 mt-3">
+        <li><strong className="text-text">Structural analysis:</strong> Our crawler extracts headings, CTAs, forms, meta tags, images, and links — the skeleton of your page.</li>
+        <li><strong className="text-text">Content analysis:</strong> The visible text is extracted and evaluated for messaging quality, audience alignment, and keyword usage.</li>
+        <li><strong className="text-text">Visual analysis:</strong> We capture a screenshot of what visitors actually see and evaluate design quality, CTA prominence, visual hierarchy, and mobile responsiveness.</li>
+      </ul>
+      <p className="mt-4">
+        All three layers feed into the scoring. This means a page with perfect SEO meta tags but a confusing headline will still get dinged on Clarity. A page with a beautiful design but no CTA will still get a low Conversion score. The scores reflect the complete picture.
+      </p>
+
+      <h3 className="text-xl font-semibold text-text mt-10 mb-3">What to do with your scores</h3>
+      <p>
+        The scores tell you <em>where</em> to focus. The recommendations tell you <em>what</em> to do. Here's a simple priority framework:
+      </p>
+      <ul className="list-disc pl-6 space-y-2 mt-3">
+        <li><strong className="text-text">Fix Conversion first</strong> — if people arrive but don't act, you're wasting every other investment. CTA improvements are typically the fastest, cheapest fix.</li>
+        <li><strong className="text-text">Fix Clarity second</strong> — if people can't understand your product, nothing else matters. This is usually a copywriting exercise.</li>
+        <li><strong className="text-text">Fix Audience Fit third</strong> — make sure you're speaking your customer's language, not yours.</li>
+        <li><strong className="text-text">Fix SEO for compounding growth</strong> — SEO takes time to show results, but the payoff is free traffic that grows over months.</li>
+        <li><strong className="text-text">Fix UX for polish</strong> — UX improvements build trust and reduce friction, but they're most impactful after the fundamentals above are solid.</li>
+      </ul>
+      <p className="mt-4">
+        Every VCLaunchKit report includes specific, page-level recommendations for each metric — not generic advice, but actions grounded in what we found on your actual pages. The top 3 priorities and quick wins sections distill everything into what you should do this week.
+      </p>
+    </div>
+  );
+}
 
 function HowItWorks() {
   return (
@@ -250,6 +426,7 @@ function CompetitorAnalysis() {
 }
 
 const POST_COMPONENTS: Record<string, () => React.ReactElement> = {
+  "how-we-score-websites": HowWeScoreWebsites,
   "how-vclaunchkit-works": HowItWorks,
   "why-vibecoders-need-gtm": WhyVibecodersNeedGTM,
   "competitor-analysis-solo-dev": CompetitorAnalysis,
@@ -322,8 +499,37 @@ export default function BlogPage() {
               </p>
             </div>
 
+            {/* Featured post */}
+            {POSTS.filter((p) => p.featured).map((post) => (
+              <Link
+                key={post.slug}
+                to={`/blog/${post.slug}`}
+                className="block bg-surface border border-accent/30 rounded-xl p-8 hover:border-accent/50 transition-colors group mb-6 ring-1 ring-accent/10"
+              >
+                <div className="flex gap-2 mb-3">
+                  <span className="text-[10px] px-2 py-0.5 bg-accent/10 border border-accent/30 rounded-full text-accent2 font-semibold">
+                    Featured
+                  </span>
+                  {post.tags.map((t) => (
+                    <span key={t} className="text-[10px] px-2 py-0.5 bg-surface2 border border-border rounded-full text-text2">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+                <h2 className="text-xl font-bold mb-3 group-hover:text-accent2 transition-colors leading-tight">
+                  {post.title}
+                </h2>
+                <p className="text-sm text-text2 leading-relaxed mb-4">{post.excerpt}</p>
+                <div className="flex items-center justify-between text-xs text-text2/50">
+                  <span>{post.date} &middot; {post.readTime}</span>
+                  <span className="text-accent2 font-medium group-hover:underline">Read the deep dive &rarr;</span>
+                </div>
+              </Link>
+            ))}
+
+            {/* Other posts */}
             <div className="space-y-4">
-              {POSTS.map((post) => (
+              {POSTS.filter((p) => !p.featured).map((post) => (
                 <Link
                   key={post.slug}
                   to={`/blog/${post.slug}`}
