@@ -97,30 +97,51 @@ async def download_pdf(
     if not results:
         raise HTTPException(status_code=404, detail="Results not found")
 
-    from gtm.reports.html_generator import generate_html_report
+    # Check Redis cache for previously rendered PDF
+    from gtm.storage.redis_client import get_redis
+    cache_key = f"pdf:{job_id}"
+    try:
+        r = get_redis()
+        cached_pdf = r.get(cache_key)
+        if cached_pdf:
+            import base64
+            pdf_data = base64.b64decode(cached_pdf)
+        else:
+            pdf_data = None
+    except Exception:
+        pdf_data = None
 
-    html_content = generate_html_report(results)
+    if not pdf_data:
+        from gtm.reports.html_generator import generate_html_report
+        html_content = generate_html_report(results)
 
-    # Render to PDF via Playwright
-    import asyncio
-    from playwright.async_api import async_playwright
+        # Render to PDF via Playwright
+        from playwright.async_api import async_playwright
 
-    async def _render_pdf(html: str) -> bytes:
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(
-                args=["--no-sandbox", "--disable-setuid-sandbox"]
-            )
-            page = await browser.new_page()
-            await page.set_content(html, wait_until="networkidle")
-            pdf_bytes = await page.pdf(
-                format="A4",
-                margin={"top": "0.7in", "right": "0.6in", "bottom": "0.7in", "left": "0.6in"},
-                print_background=True,
-            )
-            await browser.close()
-            return pdf_bytes
+        async def _render_pdf(html: str) -> bytes:
+            async with async_playwright() as p:
+                browser = await p.chromium.launch(
+                    args=["--no-sandbox", "--disable-setuid-sandbox"]
+                )
+                page = await browser.new_page()
+                await page.set_content(html, wait_until="networkidle")
+                pdf_bytes = await page.pdf(
+                    format="A4",
+                    margin={"top": "0.7in", "right": "0.6in", "bottom": "0.7in", "left": "0.6in"},
+                    print_background=True,
+                )
+                await browser.close()
+                return pdf_bytes
 
-    pdf_data = await _render_pdf(html_content)
+        pdf_data = await _render_pdf(html_content)
+
+        # Cache for 1 hour to avoid re-rendering on repeated downloads
+        try:
+            import base64
+            r = get_redis()
+            r.setex(cache_key, 3600, base64.b64encode(pdf_data).decode())
+        except Exception:
+            pass  # Cache miss is fine — just re-render next time
 
     brand_slug = job.brand.lower().replace(" ", "-")[:30]
     filename = f"vclaunchkit-{brand_slug}-{job_id[:8]}.pdf"

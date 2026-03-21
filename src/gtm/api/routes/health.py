@@ -1,10 +1,11 @@
-"""Health check endpoints."""
+"""Health check and observability endpoints."""
 
 from __future__ import annotations
 
 import logging
 
 from fastapi import APIRouter
+from fastapi.responses import PlainTextResponse
 from sqlalchemy import text
 
 from gtm.storage.database import get_engine
@@ -49,3 +50,19 @@ async def readiness():
 
     all_ok = all(v == "ok" for v in checks.values())
     return {"status": "ready" if all_ok else "degraded", "checks": checks}
+
+
+@router.get("/metrics")
+async def prometheus_metrics():
+    """Prometheus metrics endpoint for scraping."""
+    try:
+        from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+        return PlainTextResponse(
+            content=generate_latest(),
+            media_type=CONTENT_TYPE_LATEST,
+        )
+    except ImportError:
+        return PlainTextResponse(
+            content="# prometheus_client not installed\n",
+            media_type="text/plain",
+        )

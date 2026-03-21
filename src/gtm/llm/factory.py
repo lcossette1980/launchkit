@@ -10,21 +10,6 @@ from gtm.llm.base import LLMProvider
 from gtm.llm.openai_provider import OpenAIProvider
 
 
-def get_provider(settings: Settings, role: str = "analyst") -> LLMProvider:
-    """Create an LLM provider for the given role.
-
-    Model selection:
-    1. Check settings.role_models for a role-specific override
-    2. Fall back to settings.default_model
-    """
-    model = settings.role_models.get(role, settings.default_model)
-
-    if settings.llm_provider == "anthropic":
-        return AnthropicProvider(api_key=settings.anthropic_api_key, model=model)
-
-    return OpenAIProvider(api_key=settings.openai_api_key, model=model)
-
-
 @lru_cache(maxsize=16)
 def _cached_provider(provider_type: str, api_key: str, model: str) -> LLMProvider:
     """Cache provider instances to avoid re-creating clients per call."""
@@ -33,7 +18,23 @@ def _cached_provider(provider_type: str, api_key: str, model: str) -> LLMProvide
     return OpenAIProvider(api_key=api_key, model=model)
 
 
-def get_cached_provider(settings: Settings, role: str = "analyst") -> LLMProvider:
-    """Get a cached provider instance."""
+def get_provider(settings: Settings, role: str = "analyst") -> LLMProvider:
+    """Get a cached LLM provider for the given role.
+
+    Model selection:
+    1. Check settings.role_models for a role-specific override
+    2. Fall back to settings.default_model
+
+    Uses provider-specific API key based on settings.llm_provider.
+    """
     model = settings.role_models.get(role, settings.default_model)
-    return _cached_provider(settings.llm_provider, settings.openai_api_key, model)
+    api_key = (
+        settings.anthropic_api_key
+        if settings.llm_provider == "anthropic"
+        else settings.openai_api_key
+    )
+    return _cached_provider(settings.llm_provider, api_key, model)
+
+
+# Keep backward-compatible alias
+get_cached_provider = get_provider

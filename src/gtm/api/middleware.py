@@ -28,17 +28,17 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """Simple in-memory rate limiter for auth and analysis endpoints.
+    """Redis-backed rate limiter for auth and analysis endpoints.
 
-    Uses a sliding window counter per IP. For production, replace
-    with Redis-backed rate limiting.
+    Uses Redis INCR with TTL for a sliding window per IP+path.
+    Horizontally safe across multiple workers/instances.
+    Falls back to pass-through if Redis is unavailable.
     """
 
     def __init__(self, app, *, requests_per_minute: int = 30, burst: int = 10):
         super().__init__(app)
         self.rpm = requests_per_minute
         self.burst = burst
-        self._windows: dict[str, list[float]] = {}
         # Paths that get rate-limited
         self._limited_paths = {
             "/api/v1/auth/login": 5,       # 5 per minute
@@ -64,22 +64,25 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if not client_ip:
             client_ip = request.client.host if request.client else "unknown"
 
-        key = f"{client_ip}:{path}"
-        now = time.time()
-        window = 60.0  # 1 minute window
+        # Redis-backed counter with 60s TTL
+        try:
+            from gtm.storage.redis_client import get_redis
+            r = get_redis()
+            redis_key = f"ratelimit:{client_ip}:{path}"
+            current = r.incr(redis_key)
+            if current == 1:
+                r.expire(redis_key, 60)  # 60 second window
 
-        # Clean old entries
-        if key not in self._windows:
-            self._windows[key] = []
-        self._windows[key] = [t for t in self._windows[key] if t > now - window]
+            if current > limit:
+                ttl = r.ttl(redis_key)
+                logger.warning("Rate limit exceeded: %s on %s (%d/%d)", client_ip, path, current, limit)
+                return JSONResponse(
+                    status_code=429,
+                    content={"detail": "Too many requests. Please try again later."},
+                    headers={"Retry-After": str(max(ttl, 1))},
+                )
+        except Exception:
+            # Redis unavailable — fail open (allow request)
+            logger.debug("Rate limit check skipped — Redis unavailable")
 
-        if len(self._windows[key]) >= limit:
-            logger.warning("Rate limit exceeded: %s on %s", client_ip, path)
-            return JSONResponse(
-                status_code=429,
-                content={"detail": "Too many requests. Please try again later."},
-                headers={"Retry-After": "60"},
-            )
-
-        self._windows[key].append(now)
         return await call_next(request)
