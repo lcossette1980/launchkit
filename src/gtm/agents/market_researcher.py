@@ -80,79 +80,149 @@ Based on search results and competitor landscape, return ONLY valid JSON:
     async def _research(
         self, config: dict, state: dict, search_tools: SearchTools
     ) -> dict:
-        """Run search queries and filter competitor URLs."""
+        """Run search queries and filter competitor URLs.
+
+        Uses page analysis results (available from Step 3) to craft
+        search queries grounded in what the site *actually* does,
+        rather than relying on sparse user input or blind guesses.
+        """
+        import json
+
         brand = config["brand"]
         offers = config.get("main_offers", "")
         usp = config.get("usp_key", "")
         audience = config.get("audience_primary", "")
+        site_url = config.get("site_url", "")
 
-        # Build queries focused on PRODUCT CATEGORY, not brand name.
-        # Brand-name searches produce irrelevant results when the name
-        # is ambiguous (e.g. "VC LaunchKit" → health-insurance hits).
         negatives = (
             " -insurance -health -dictionary -vocabulary -definitions "
             "-g2 -cbinsights -trustradius -sourceforge -reddit -mdpi"
         )
 
-        # Primary queries target product category and audience
         queries: list[str] = []
-        if offers:
-            queries.append(f"{offers} SaaS tools software{negatives}")
-            queries.append(f"best {offers} platforms for {audience}{negatives}")
-        if usp:
-            queries.append(f"{usp} software tools{negatives}")
-        if audience and offers:
-            queries.append(
-                f"{audience} {offers} alternatives{negatives}"
-            )
 
-        # Include brand name as ONE supplementary query, not the primary one
-        if brand:
-            queries.append(f'"{brand}" competitors alternatives{negatives}')
+        # ── PRIMARY: LLM-generated queries from page analysis ──
+        # By Step 4, we've already crawled and analyzed the site.
+        # Use that understanding to craft precise competitor searches.
+        page_analyses = state.get("page_analyses", [])
+        if page_analyses:
+            # Build a compact site summary for the LLM
+            site_summary_parts = []
+            for pa in page_analyses[:3]:
+                title = pa.get("title", "")
+                strengths = pa.get("strengths", [])[:2]
+                if title:
+                    site_summary_parts.append(f"Page: {title}")
+                if strengths:
+                    site_summary_parts.append(f"  Key features: {'; '.join(str(s)[:100] for s in strengths)}")
+            site_summary = "\n".join(site_summary_parts)[:1200]
 
-        # Fallback queries when offers/usp are empty — derive from brand
-        # name, audience, and site URL to ensure we always have search queries
-        if not offers and not usp:
-            # Extract keywords from the site URL domain
-            site_url = config.get("site_url", "")
-            domain_words = ""
-            if site_url:
-                domain = site_url.split("//")[-1].split("/")[0].split(".")[0]
-                # Split camelCase/hyphenated domain into words
-                domain_words = " ".join(
-                    w for w in re.split(r"[-_]|(?<=[a-z])(?=[A-Z])", domain)
-                    if len(w) > 2
+            query_prompt = f"""Based on this website analysis, generate 6 Google search queries
+to find DIRECT COMPETITORS — companies offering similar products/services
+to a similar audience.
+
+Brand: {brand}
+URL: {site_url}
+Product: {offers}
+USP: {usp}
+Target audience: {audience}
+
+Site analysis:
+{site_summary}
+
+Return ONLY valid JSON:
+{{
+  "queries": [
+    "search query 1",
+    "search query 2",
+    "search query 3",
+    "search query 4",
+    "search query 5",
+    "search query 6"
+  ]
+}}
+
+RULES:
+- Search for the PRODUCT CATEGORY, not the brand name
+- Use terms like "alternatives to", "tools for", "software", "platform"
+- Target the specific niche — not generic business tools
+- Include audience-specific terms where relevant
+- Do NOT include the brand name "{brand}" in queries
+- Each query should find a DIFFERENT type of competitor"""
+
+            try:
+                result = await self._generate_json(
+                    query_prompt,
+                    required_keys=["queries"],
+                    brand=brand,
+                    audience=audience,
                 )
+                llm_queries = result.get("queries", [])
+                # Append negatives to each LLM query
+                for q in llm_queries[:6]:
+                    if isinstance(q, str) and q.strip():
+                        queries.append(f"{q}{negatives}")
+                self.logger.info(
+                    "Generated %d site-aware competitor queries", len(llm_queries)
+                )
+            except Exception:
+                self.logger.warning("LLM query generation failed — falling back to config-based queries")
 
-            if audience:
-                queries.append(f"tools for {audience}{negatives}")
-                queries.append(f"best software for {audience}{negatives}")
-            if domain_words:
-                queries.append(f"{domain_words} software alternatives{negatives}")
-                queries.append(f"{domain_words} tools for {audience}{negatives}")
+        # ── SECONDARY: Config-based queries (fallback / supplement) ──
+        if len(queries) < 4:
+            if offers:
+                queries.append(f"{offers} SaaS tools software{negatives}")
+                queries.append(f"best {offers} platforms for {audience}{negatives}")
+            if usp:
+                queries.append(f"{usp} software tools{negatives}")
+            if audience and offers:
+                queries.append(f"{audience} {offers} alternatives{negatives}")
             if brand:
-                queries.append(f"{brand} similar tools software{negatives}")
-                queries.append(f"tools like {brand} for {audience}{negatives}")
+                queries.append(f'"{brand}" competitors alternatives{negatives}')
 
-        # Add LLM-suggested queries from the planner
+            # Domain-word fallback when offers/usp are empty
+            if not offers and not usp:
+                domain_words = ""
+                if site_url:
+                    domain = site_url.split("//")[-1].split("/")[0].split(".")[0]
+                    domain_words = " ".join(
+                        w for w in re.split(r"[-_]|(?<=[a-z])(?=[A-Z])", domain)
+                        if len(w) > 2
+                    )
+                if audience:
+                    queries.append(f"tools for {audience}{negatives}")
+                if domain_words:
+                    queries.append(f"{domain_words} software alternatives{negatives}")
+
+        # ── TERTIARY: Planner's pre-crawl queries (lowest priority) ──
         plan_queries = state.get("analysis_plan", {}).get("competitor_queries", [])
-        queries.extend(plan_queries[:5])
+        for pq in plan_queries[:3]:
+            if pq not in queries:
+                queries.append(pq)
+
+        # Deduplicate while preserving order
+        seen_queries: set[str] = set()
+        unique_queries: list[str] = []
+        for q in queries:
+            q_lower = q.lower().strip()
+            if q_lower not in seen_queries:
+                seen_queries.add(q_lower)
+                unique_queries.append(q)
 
         all_urls: list[str] = []
-        for query in queries[:8]:
+        for query in unique_queries[:8]:
             results = await search_tools.serp_search(query)
             for r in results:
                 url = r.get("url", "")
-                if url and url != config["site_url"]:
+                if url and url != site_url:
                     all_urls.append(url)
 
         # Filter
         filtered = self._filter_competitor_urls(all_urls)
 
-        # Return extra candidates so downstream filtering still yields ~5 good ones
         return {
             "competitor_urls": filtered[:15],
-            "market_queries": queries,
+            "market_queries": unique_queries[:8],
         }
 
     @staticmethod
